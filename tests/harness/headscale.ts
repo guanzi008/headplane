@@ -8,7 +8,7 @@ import { join } from "node:path";
 import tc from "testcontainers";
 import { stringify } from "yaml";
 
-import type { HeadscaleVersion } from "./versions";
+import { headscaleImage, type HeadscaleVersion } from "./versions";
 
 export const HARNESS_LABEL = "me.tale.headplane.harness";
 const ALIAS = "headscale";
@@ -183,7 +183,7 @@ export async function startHeadscale(options: {
   // A fixed host port survives restarts, which Headplane's Docker
   // integration does after editing the config.
   async function start(port: number) {
-    let builder = new tc.GenericContainer(`headscale/headscale:${options.version}`)
+    let builder = new tc.GenericContainer(headscaleImage(options.version))
       .withCommand(["serve"])
       .withExposedPorts({ container: containerPort, host: port })
       .withBindMounts([{ source: configDir, target: "/etc/headscale" }])

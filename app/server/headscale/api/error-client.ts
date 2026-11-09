@@ -88,14 +88,54 @@ export function headscaleErrorMessage(error: unknown): string | undefined {
   }
 
   const { data, rawData, statusCode } = error.data;
-  const message =
-    data != null && typeof data.message === "string" && data.message.length > 0
-      ? data.message
-      : rawData;
+  const message = problemMessage(data) ?? rawData;
 
   if (message.length === 0) {
     return `Headscale rejected the change (${statusCode}).`;
   }
 
   return message.charAt(0).toUpperCase() + message.slice(1);
+}
+
+// Headscale 0.30 uses RFC 7807 problem+json. The useful cause is in
+// `errors[].message`; `detail` usually names the operation. Prefer the
+// causes so callers keep the specific messages older versions returned.
+// 0.27-0.29 used `message`, which stays first for compatibility.
+function problemMessage(data: Record<string, unknown> | null): string | undefined {
+  if (data == null) return undefined;
+
+  if (typeof data.message === "string" && data.message.length > 0) {
+    return data.message;
+  }
+
+  if (Array.isArray(data.errors)) {
+    const messages = data.errors
+      .map((error) => {
+        if (typeof error === "string") return error;
+        if (
+          error != null &&
+          typeof error === "object" &&
+          "message" in error &&
+          typeof error.message === "string"
+        ) {
+          return error.message;
+        }
+        return undefined;
+      })
+      .filter((message): message is string => typeof message === "string" && message.length > 0);
+
+    if (messages.length > 0) {
+      return messages.join(": ");
+    }
+  }
+
+  if (typeof data.detail === "string" && data.detail.length > 0) {
+    return data.detail;
+  }
+
+  if (typeof data.title === "string" && data.title.length > 0) {
+    return data.title;
+  }
+
+  return undefined;
 }

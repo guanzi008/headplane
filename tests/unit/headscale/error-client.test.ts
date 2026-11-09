@@ -27,6 +27,30 @@ describe("headscaleErrorMessage", () => {
     expect(headscaleErrorMessage(error)).toBe("User not found");
   });
 
+  test("reads Headscale 0.30 problem details", () => {
+    const error = apiError(404, "{}", {
+      title: "Not Found",
+      status: 404,
+      detail: "node not found",
+    });
+    expect(headscaleErrorMessage(error)).toBe("Node not found");
+  });
+
+  test("prefers the specific problem errors over the operation detail", () => {
+    const error = apiError(400, "{}", {
+      title: "Bad Request",
+      status: 400,
+      detail: "setting tags",
+      errors: [{ message: "tag must start with the string 'tag:'" }],
+    });
+    expect(headscaleErrorMessage(error)).toBe("Tag must start with the string 'tag:'");
+  });
+
+  test("falls back to the problem title", () => {
+    const error = apiError(401, "{}", { title: "Unauthorized", status: 401 });
+    expect(headscaleErrorMessage(error)).toBe("Unauthorized");
+  });
+
   test("falls back to the raw body", () => {
     expect(headscaleErrorMessage(apiError(401, "Unauthorized", null))).toBe("Unauthorized");
   });

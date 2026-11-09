@@ -1,5 +1,9 @@
 import { access, constants, readFile, writeFile } from "node:fs/promises";
+import { extname } from "node:path";
 import { setTimeout } from "node:timers/promises";
+
+import { parse as parseJson, type ParseError } from "jsonc-parser";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 import log from "~/utils/log";
 
@@ -61,7 +65,7 @@ export class HeadscaleDNSConfig {
 
     this.writeLock = true;
     log.debug("config", "Writing updated DNS configuration to %s", this.path);
-    const data = JSON.stringify(this.records, null, 4);
+    const data = serializeRecords(this.path, this.records);
     await writeFile(this.path, data);
     this.writeLock = false;
   }
@@ -109,11 +113,64 @@ async function loadConfigFile(path: string) {
   log.debug("config", "Reading Headscale DNS file at %s", path);
   try {
     const data = await readFile(path, "utf8");
-    const records = JSON.parse(data) as DNSRecord[];
-    return records;
+    return parseRecords(path, data);
   } catch (e) {
     log.error("config", "Error reading Headscale DNS file at %s", path);
     log.error("config", "%s", e);
     return false;
+  }
+}
+
+// Headscale 0.30 picks the format from the extension. Both JSON extensions
+// are HuJSON, so comments and trailing commas are valid in either one.
+function parseRecords(path: string, data: string): DNSRecord[] {
+  const format = recordsFormat(path);
+  let parsed: unknown;
+
+  if (format === "yaml") {
+    parsed = parseYaml(data);
+  } else {
+    const errors: ParseError[] = [];
+    parsed = parseJson(data, errors, { allowTrailingComma: true });
+    if (errors.length > 0) {
+      throw new Error(`invalid JSON: ${errors.map((error) => error.error).join(", ")}`);
+    }
+  }
+
+  // Headscale treats an empty file as no records rather than invalid input.
+  if (parsed == null) return [];
+  if (!Array.isArray(parsed)) {
+    throw new Error("DNS records must be a list");
+  }
+
+  return parsed.map((record, index) => {
+    if (
+      record == null ||
+      typeof record !== "object" ||
+      typeof record.name !== "string" ||
+      typeof record.type !== "string" ||
+      typeof record.value !== "string"
+    ) {
+      throw new Error(`DNS record ${index + 1} needs string name, type, and value fields`);
+    }
+
+    return record as DNSRecord;
+  });
+}
+
+function serializeRecords(path: string, records: DNSRecord[]) {
+  return recordsFormat(path) === "yaml" ? stringifyYaml(records) : JSON.stringify(records, null, 4);
+}
+
+function recordsFormat(path: string): "json" | "yaml" {
+  switch (extname(path).toLowerCase()) {
+    case ".json":
+    case ".hujson":
+      return "json";
+    case ".yaml":
+    case ".yml":
+      return "yaml";
+    default:
+      throw new Error("DNS records file must end in .json, .hujson, .yaml, or .yml");
   }
 }

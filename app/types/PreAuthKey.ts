@@ -7,7 +7,7 @@ export interface PreAuthKey {
   reusable: boolean;
   ephemeral: boolean;
   used: boolean;
-  expiration: string;
+  expiration: string | null;
   createdAt: string;
   aclTags: string[];
 }

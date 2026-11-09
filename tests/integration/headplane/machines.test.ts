@@ -7,7 +7,7 @@ import type { Machine } from "~/types";
 import type { ActionResult } from "~/utils/form";
 
 import { createTailnet, type Tailnet } from "../../harness/tailnet";
-import { testedVersions } from "../../harness/versions";
+import { headscaleVersionAtLeast, testedVersions } from "../../harness/versions";
 import { waitFor } from "../../harness/wait";
 import { statusOf, type TestApp } from "../../support/app";
 
@@ -167,7 +167,9 @@ describe("machine tags on a real tailnet", () => {
 
   test("a tag lets the machines its rules allow reach the node", async () => {
     const server = await tailnet.node({ name: "server", user: "alice@" });
-    const laptop = await tailnet.node({ name: "laptop", user: "alice@" });
+    // Headscale 0.30 always makes one user's devices peers, regardless of the
+    // policy, so use another user to observe that tagging grants access.
+    const laptop = await tailnet.node({ name: "laptop", user: "bob@" });
     expect(await peer(laptop, "server")).toBeUndefined();
 
     const result = await machine({
@@ -195,8 +197,8 @@ describe("machine tags on a real tailnet", () => {
 });
 
 describe.for(testedVersions())("machine owners and expiry on Headscale %s", (version) => {
-  const ownersAreImmutable = version !== "0.27.1";
-  const canDisableExpiry = version === "0.29.5";
+  const ownersAreImmutable = headscaleVersionAtLeast(version, "0.28.0");
+  const canDisableExpiry = headscaleVersionAtLeast(version, "0.29.0");
   let tailnet: Tailnet;
   let app: TestApp;
   let owner: string;

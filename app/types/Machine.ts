@@ -10,11 +10,11 @@ export interface Machine {
   name: string;
 
   // User can be null for tag-only nodes in Headscale 0.28+
-  user?: User;
-  lastSeen: string;
+  user?: User | null;
+  lastSeen: string | null;
   expiry: string | null;
 
-  preAuthKey?: PreAuthKey;
+  preAuthKey?: PreAuthKey | null;
 
   createdAt: string;
   registerMethod:
@@ -26,6 +26,10 @@ export interface Machine {
   tags: string[];
   givenName: string;
   online: boolean;
+
+  // Added to the v1 API in Headscale 0.30. Older versions only expose the
+  // ephemeral flag on the key the node was created with.
+  ephemeral?: boolean;
 
   // Added in Headscale 0.26+
   approvedRoutes: string[];

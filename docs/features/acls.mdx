@@ -50,7 +50,9 @@ The **Rules** tab renders the policy as five lists:
   `autogroup:internet` as the destination. App capabilities (`app`) are kept
   but can only be edited in the file. Grants need Headscale
   {versions.headscale.grants} or newer, and the list is hidden on older
-  versions.
+  versions. On Headscale 0.30 and newer, each port entry may contain only one
+  port or contiguous range: write `tcp:80` and `tcp:443` as separate entries
+  instead of `tcp:80,443`.
 - **SSH rules**: the `ssh` section, including `check` mode and its check
   period.
 - **Hosts**: the `hosts` section, which names an IP address or CIDR range so

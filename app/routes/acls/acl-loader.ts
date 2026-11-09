@@ -4,7 +4,7 @@ import {
   headscaleLiveStoreContext,
   requestApiContext,
 } from "~/server/context";
-import { isDataWithApiError } from "~/server/headscale/api/error-client";
+import { headscaleErrorMessage, isDataWithApiError } from "~/server/headscale/api/error-client";
 import { nodesResource, usersResource } from "~/server/headscale/live-store";
 import { Capabilities } from "~/server/web/roles";
 import log from "~/utils/log";
@@ -30,6 +30,7 @@ export async function aclLoader({ request, context }: Route.LoaderArgs) {
     access: auth.can(principal, Capabilities.write_policy),
     writable: false,
     canEditGrants: context.get(headscaleContext).capabilities.policySupportsGrants,
+    grantIpAllowsOnePortRange: context.get(headscaleContext).capabilities.grantIpAllowsOnePortRange,
     policy: "",
     // Context for the visual editor; both are optional.
     users: [] as string[],
@@ -75,11 +76,15 @@ export async function aclLoader({ request, context }: Route.LoaderArgs) {
     }
 
     // File mode without a file, which is Headscale's default configuration.
-    if (
-      isDataWithApiError(error) &&
-      String(error.data.data?.message).startsWith('reading policy from path "":')
-    ) {
-      return flags;
+    if (isDataWithApiError(error)) {
+      const detail = error.data.data?.detail;
+      const message = headscaleErrorMessage(error)?.toLowerCase();
+      if (
+        (typeof detail === "string" && detail.startsWith('reading policy from path ""')) ||
+        message?.includes('reading policy from path ""')
+      ) {
+        return flags;
+      }
     }
 
     throw error;

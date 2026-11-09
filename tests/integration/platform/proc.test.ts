@@ -9,7 +9,7 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { stringify } from "yaml";
 
 import { headscaleConfig } from "../../harness/headscale";
-import { LATEST_HEADSCALE } from "../../harness/versions";
+import { headscaleImage, LATEST_HEADSCALE } from "../../harness/versions";
 
 // This is a little shim file that we use to execute the real proc-helper that
 // is bundled through Vite in order to test against a real Linux /proc FS.
@@ -66,13 +66,13 @@ describe("ProcIntegration", () => {
     const runnerPath = join(tmpDir, "test-runner.js");
     await writeFile(runnerPath, testRunner);
 
-    // Build a container image that has both headscale and Node.js using
-    // a multi-stage Dockerfile. The headscale image is distroless (no shell)
-    // so we pull the binary into node:alpine via COPY --from.
+    // Build a container image that has both headscale and Node.js using a
+    // multi-stage Dockerfile. The distroless image has no shell, but its
+    // binary is still at /ko-app/headscale for COPY --from.
     await writeFile(
       join(tmpDir, "Dockerfile"),
       [
-        `FROM headscale/headscale:${LATEST_HEADSCALE}-debug AS headscale`,
+        `FROM ${headscaleImage(LATEST_HEADSCALE)} AS headscale`,
         "FROM node:24-alpine",
         "COPY --from=headscale /ko-app/headscale /usr/local/bin/headscale",
       ].join("\n"),

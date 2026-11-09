@@ -218,7 +218,13 @@ export default function Page({
           <Attribute name="Created" value={new Date(node.createdAt).toLocaleString()} />
           <Attribute
             name="Last seen"
-            value={node.online ? "Connected" : new Date(node.lastSeen).toLocaleString()}
+            value={
+              node.online
+                ? "Connected"
+                : !node.lastSeen
+                  ? "Never seen"
+                  : new Date(node.lastSeen).toLocaleString()
+            }
           />
           <Attribute
             name="Key expiry"

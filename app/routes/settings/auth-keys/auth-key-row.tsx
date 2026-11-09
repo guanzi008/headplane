@@ -13,9 +13,13 @@ interface Props {
 
 export default function AuthKeyRow({ authKey, user }: Props) {
   const createdAt = new Date(authKey.createdAt);
-  const expiration = new Date(authKey.expiration);
-  const isPastExpiry = expiration < new Date();
+  const expiration = authKey.expiration === null ? null : new Date(authKey.expiration);
+  const isPastExpiry = expiration !== null && expiration < new Date();
   const isSpent = authKey.used && !authKey.reusable;
+  let expiry = "Never";
+  if (expiration !== null) {
+    expiry = isPastExpiry ? `Expired ${formatTimeDelta(expiration)}` : formatTimeUntil(expiration);
+  }
 
   return (
     <tr>
@@ -37,9 +41,9 @@ export default function AuthKeyRow({ authKey, user }: Props) {
       <TableCell
         className={isPastExpiry ? "text-muted whitespace-nowrap" : "whitespace-nowrap"}
         suppressHydrationWarning
-        title={expiration.toLocaleString()}
+        title={expiration?.toLocaleString() ?? "Never expires"}
       >
-        {isPastExpiry ? `Expired ${formatTimeDelta(expiration)}` : formatTimeUntil(expiration)}
+        {expiry}
       </TableCell>
       <TableCell
         className="text-muted whitespace-nowrap"

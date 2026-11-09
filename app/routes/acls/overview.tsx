@@ -40,7 +40,15 @@ export const action = aclAction;
 export const clientAction = toastClientAction;
 
 export default function Page({
-  loaderData: { access, writable, canEditGrants, policy, users, tagUsage },
+  loaderData: {
+    access,
+    writable,
+    canEditGrants,
+    grantIpAllowsOnePortRange,
+    policy,
+    users,
+    tagUsage,
+  },
 }: Route.ComponentProps) {
   const [codePolicy, setCodePolicy] = useState(policy);
   const [savedPolicy, setSavedPolicy] = useState(policy);
@@ -172,6 +180,7 @@ export default function Page({
             <RulesEditor
               canEditGrants={canEditGrants}
               destinations={destinations}
+              grantIpAllowsOnePortRange={grantIpAllowsOnePortRange}
               isDisabled={disabled}
               onChange={applyPolicy}
               policy={value}

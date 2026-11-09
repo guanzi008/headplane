@@ -151,6 +151,64 @@ describe("Headscale config loader", () => {
     ]);
   });
 
+  test("reads and writes HuJSON extra records", async () => {
+    const path = join(dir, "config.yaml");
+    const recordsPath = join(dir, "extra-records.hujson");
+    await writeFile(
+      recordsPath,
+      [
+        "[",
+        "  // Keep this file editable in Headscale 0.30.",
+        '  { "name": "hu.json", "type": "A", "value": "1.1.1.1" },',
+        "]",
+      ].join("\n"),
+    );
+    await writeFile(
+      path,
+      ["server_url: http://localhost:8080", "dns:", `  extra_records_path: ${recordsPath}`].join(
+        "\n",
+      ),
+    );
+
+    const config = await loadHeadscaleConfig(path);
+    expect(config.dnsRecords()).toEqual([{ name: "hu.json", type: "A", value: "1.1.1.1" }]);
+
+    await config.addDNS({ name: "new", type: "A", value: "3.3.3.3" });
+    expect(JSON.parse(await readFile(recordsPath, "utf8"))).toEqual([
+      { name: "hu.json", type: "A", value: "1.1.1.1" },
+      { name: "new", type: "A", value: "3.3.3.3" },
+    ]);
+  });
+
+  test("reads and writes YAML extra records", async () => {
+    const path = join(dir, "config.yaml");
+    const recordsPath = join(dir, "extra-records.yaml");
+    await writeFile(
+      recordsPath,
+      [
+        "# Keep this file editable in Headscale 0.30.",
+        "- name: yaml.record",
+        "  type: A",
+        "  value: 1.1.1.1",
+      ].join("\n"),
+    );
+    await writeFile(
+      path,
+      ["server_url: http://localhost:8080", "dns:", `  extra_records_path: ${recordsPath}`].join(
+        "\n",
+      ),
+    );
+
+    const config = await loadHeadscaleConfig(path);
+    expect(config.dnsRecords()).toEqual([{ name: "yaml.record", type: "A", value: "1.1.1.1" }]);
+
+    await config.addDNS({ name: "new", type: "A", value: "3.3.3.3" });
+    expect(parse(await readFile(recordsPath, "utf8"))).toEqual([
+      { name: "yaml.record", type: "A", value: "1.1.1.1" },
+      { name: "new", type: "A", value: "3.3.3.3" },
+    ]);
+  });
+
   test("leaves inline YAML records read-only", async () => {
     const path = join(dir, "config.yaml");
     const yaml = [

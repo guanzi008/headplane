@@ -5,7 +5,11 @@ import { headscaleErrorMessage } from "~/server/headscale/api/error-client";
 import type { Machine, User } from "~/types";
 
 import { createTailnet, type Tailnet } from "../../harness/tailnet";
-import { type HeadscaleVersion, testedVersions } from "../../harness/versions";
+import {
+  headscaleVersionAtLeast as gte,
+  type HeadscaleVersion,
+  testedVersions,
+} from "../../harness/versions";
 
 // What Headplane relies on from Headscale's API, asserted through Headplane's
 // client against each version we support.
@@ -32,16 +36,11 @@ async function rejection(promise: Promise<unknown>) {
   return headscaleErrorMessage(error) ?? String(error);
 }
 
-function gte(version: HeadscaleVersion, target: string) {
-  const [a, b] = version.split(".").map(Number);
-  const [x, y] = target.split(".").map(Number);
-  return a !== x ? a > x : b >= y;
-}
-
 for (const version of testedVersions()) {
   const hasStableKeyIds = gte(version, "0.28.0");
   const canDisableExpiry = gte(version, "0.29.0");
   const acceptsGrants = gte(version, "0.29.0");
+  const usesProblemDetails = gte(version, "0.30.0");
 
   // Tests use unique names so they can share one tailnet and run at once.
   describe.concurrent(`Headscale ${version} contract`, () => {
@@ -60,7 +59,9 @@ for (const version of testedVersions()) {
     });
 
     test("capabilities follow the version", () => {
-      expect(tailnet.headscale.version.unknown).toBe(false);
+      // The 0.30 development image is untagged and reports a Go
+      // pseudo-version instead of a release version.
+      expect(tailnet.headscale.version.unknown).toBe(usesProblemDetails);
       expect(tailnet.headscale.capabilities).toEqual({
         preAuthKeysHaveStableIds: hasStableKeyIds,
         nodeTagsAreFlat: hasStableKeyIds,
@@ -68,6 +69,8 @@ for (const version of testedVersions()) {
         registerKeyIncludesAuthReqPrefix: canDisableExpiry,
         keyExpiryCanBeDisabled: canDisableExpiry,
         policySupportsGrants: acceptsGrants,
+        nodeExpiryUsesBody: usesProblemDetails,
+        grantIpAllowsOnePortRange: usesProblemDetails,
       });
     });
 
@@ -109,8 +112,10 @@ for (const version of testedVersions()) {
         const first = await api.users.create({ name: unique("taken") });
         const second = await api.users.create({ name: unique("free") });
 
-        expect(await rejection(api.users.create({ name: first.name }))).toContain("UNIQUE");
-        expect(await rejection(api.users.rename(second.id, first.name))).toContain("UNIQUE");
+        expect(await rejection(api.users.create({ name: first.name }))).toMatch(
+          usesProblemDetails ? /user already exists/i : /UNIQUE/,
+        );
+        expect(await rejection(api.users.rename(second.id, first.name))).toMatch(/UNIQUE/);
       });
 
       test("rename changes the name", async () => {
@@ -146,7 +151,8 @@ for (const version of testedVersions()) {
           used: false,
           aclTags: ["tag:ci"],
         });
-        expect(new Date(key.expiration).getTime()).toBeCloseTo(expiration.getTime(), -3);
+        expect(key.expiration).not.toBeNull();
+        expect(new Date(key.expiration!).getTime()).toBeCloseTo(expiration.getTime(), -3);
 
         await api.preAuthKeys.create({
           user: (await api.users.create({ name: unique("otherkeys") })).id,
@@ -179,7 +185,7 @@ for (const version of testedVersions()) {
         }
       });
 
-      test("a key without an expiration gets the zero time", async () => {
+      test("a key without an expiration has no expiration time", async () => {
         const user = await api.users.create({ name: unique("forever") });
         const key = await api.preAuthKeys.create({
           user: user.id,
@@ -189,7 +195,7 @@ for (const version of testedVersions()) {
           aclTags: null,
         });
 
-        expect(key.expiration).toBe("0001-01-01T00:00:00Z");
+        expect(key.expiration).toBe(usesProblemDetails ? null : "0001-01-01T00:00:00Z");
       });
 
       test("tags must start with tag:", async () => {
@@ -218,8 +224,10 @@ for (const version of testedVersions()) {
         });
 
         await api.preAuthKeys.expire(key);
-        const listed = (await api.preAuthKeys.listForUser(user.id)).find((k) => k.id === key.id)!;
-        expect(new Date(listed.expiration).getTime()).toBeLessThanOrEqual(Date.now());
+        const listed = (await api.preAuthKeys.listForUser(user.id)).find((k) => k.id === key.id);
+
+        expect(listed).toBeDefined();
+        expect(new Date(listed!.expiration!).getTime()).toBeLessThanOrEqual(Date.now());
       });
 
       test.runIf(hasStableKeyIds)("tag-only keys have no user and show up in listAll", async () => {
@@ -327,8 +335,12 @@ for (const version of testedVersions()) {
         await api.nodes.rename(id, givenName);
         expect(await api.nodes.get(id)).toMatchObject({ name, givenName });
 
-        expect(await rejection(api.nodes.rename(other.id, givenName))).toMatch(/is not unique/);
-        expect(await rejection(api.nodes.rename(other.id, "Bad_Name!"))).toContain("Bad_Name!");
+        expect(await rejection(api.nodes.rename(other.id, givenName))).toMatch(
+          /already taken|is not unique/,
+        );
+        expect(await rejection(api.nodes.rename(other.id, "Bad_Name!"))).toMatch(
+          /valid DNS label|must be lowercase/i,
+        );
       });
 
       test("tags are validated and replace the node's tags", async () => {
@@ -455,7 +467,7 @@ for (const version of testedVersions()) {
       const user = await tailnet.api.users.create({ name: "owner" });
       await tailnet.node({ name: "owned", user: user.name });
 
-      expect(await rejection(tailnet.api.users.delete(user.id))).toBe(
+      expect(await rejection(tailnet.api.users.delete(user.id))).toContain(
         "User not empty: node(s) found",
       );
     });
@@ -497,9 +509,7 @@ for (const version of testedVersions()) {
     });
 
     test("a new tailnet has no policy", async () => {
-      expect(await rejection(tailnet.api.policy.get())).toBe(
-        "Loading ACL from database: acl policy not found",
-      );
+      expect(await rejection(tailnet.api.policy.get())).toMatch(/acl policy not found/i);
     });
 
     test("a policy round-trips with its comments and trailing commas", async () => {
@@ -512,9 +522,7 @@ for (const version of testedVersions()) {
     });
 
     test("invalid HuJSON is rejected", async () => {
-      expect(await rejection(tailnet.api.policy.set("{"))).toMatch(
-        /^Setting policy: parsing policy: parsing HuJSON: /,
-      );
+      expect(await rejection(tailnet.api.policy.set("{"))).toMatch(/parsing HuJSON: /);
     });
 
     test(`a policy with grants is ${acceptsGrants ? "accepted" : "rejected"}`, async () => {

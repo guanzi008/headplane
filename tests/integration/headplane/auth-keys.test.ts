@@ -56,7 +56,8 @@ describe("auth key expiry", () => {
 
     expect(statusOf(result)).toBe(200);
     const [key] = await keysFor(alice);
-    const days = Math.round((new Date(key.expiration).getTime() - Date.now()) / 86_400_000);
+    expect(key.expiration).not.toBeNull();
+    const days = Math.round((new Date(key.expiration!).getTime() - Date.now()) / 86_400_000);
     expect(days).toBe(365_000);
   });
 
@@ -110,7 +111,8 @@ describe("self-service auth keys", () => {
 
     expect(statusOf(await expire(cookie, { key_id: key.id, user_id: alice.id }))).toBe(200);
     const [expired] = await keysFor(alice);
-    expect(new Date(expired.expiration).getTime()).toBeLessThanOrEqual(Date.now());
+    expect(expired.expiration).not.toBeNull();
+    expect(new Date(expired.expiration!).getTime()).toBeLessThanOrEqual(Date.now());
   });
 
   test("a viewer can't expire someone else's key by naming their own user", async () => {

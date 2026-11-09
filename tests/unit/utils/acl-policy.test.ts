@@ -5,6 +5,7 @@ import {
   formatPolicy,
   groupsForUser,
   hasPortSpec,
+  hasSinglePortRange,
   isValidGroupName,
   isValidHostName,
   isValidRoute,
@@ -204,6 +205,13 @@ describe("parsePolicy", () => {
   test("does not treat trailing-comma-like text inside strings as syntax", () => {
     const { policy } = parseOrThrow(`{ "custom": "keep ,} and ,] intact" }`);
     expect(policy.extra.custom).toBe("keep ,} and ,] intact");
+  });
+
+  test("accepts one port range per grant entry on Headscale 0.30", () => {
+    expect(hasSinglePortRange("tcp:443")).toBe(true);
+    expect(hasSinglePortRange("80-90")).toBe(true);
+    expect(hasSinglePortRange("*")).toBe(true);
+    expect(hasSinglePortRange("tcp:80,443")).toBe(false);
   });
 });
 

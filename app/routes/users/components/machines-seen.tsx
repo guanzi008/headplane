@@ -1,7 +1,7 @@
 import { formatTimeDelta } from "~/utils/time";
 
 interface MachinesSeenProps {
-  machines: { online: boolean; lastSeen: string }[];
+  machines: { online: boolean; lastSeen: string | null }[];
 }
 
 export default function MachinesSeen({ machines }: MachinesSeenProps) {
@@ -13,7 +13,14 @@ export default function MachinesSeen({ machines }: MachinesSeenProps) {
     return <span className="text-ok">Connected</span>;
   }
 
-  const lastSeen = new Date(Math.max(...machines.map((m) => new Date(m.lastSeen).getTime())));
+  const seen = machines.flatMap((machine) =>
+    machine.lastSeen ? [new Date(machine.lastSeen).getTime()] : [],
+  );
+  if (seen.length === 0) {
+    return <span className="text-muted">Never seen</span>;
+  }
+
+  const lastSeen = new Date(Math.max(...seen));
   return (
     <span className="text-muted" suppressHydrationWarning title={lastSeen.toLocaleString()}>
       {formatTimeDelta(lastSeen)}

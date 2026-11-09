@@ -56,6 +56,21 @@ export interface Capabilities {
    * 0.29.0.
    */
   readonly policySupportsGrants: boolean;
+
+  /**
+   * `POST /api/v1/node/{id}/expire` reads the expiry change from a
+   * JSON body instead of the query string. Introduced in 0.30.0.
+   * Sending the old query parameters to 0.30 expires the node
+   * immediately because the server sees an empty body.
+   */
+  readonly nodeExpiryUsesBody: boolean;
+
+  /**
+   * Each `ip` entry in a grant may name only one port or contiguous port
+   * range. Comma-separated lists such as `tcp:80,443` must be split into
+   * separate entries. Introduced in 0.30.0.
+   */
+  readonly grantIpAllowsOnePortRange: boolean;
 }
 
 export function capabilitiesFor(version: ServerVersion): Capabilities {
@@ -66,5 +81,7 @@ export function capabilitiesFor(version: ServerVersion): Capabilities {
     registerKeyIncludesAuthReqPrefix: gte(version, "0.29.0"),
     keyExpiryCanBeDisabled: gte(version, "0.29.0"),
     policySupportsGrants: gte(version, "0.29.0"),
+    nodeExpiryUsesBody: gte(version, "0.30.0"),
+    grantIpAllowsOnePortRange: gte(version, "0.30.0"),
   };
 }

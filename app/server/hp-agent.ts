@@ -509,7 +509,9 @@ export async function createAgentManager(
       );
 
       // Headscale doesn't remove ephemeral nodes when they disconnect.
-      for (const node of nodes.filter((n) => n.preAuthKey?.ephemeral && !n.online)) {
+      for (const node of nodes.filter(
+        (n) => (n.ephemeral ?? n.preAuthKey?.ephemeral) === true && !n.online,
+      )) {
         await withTimeout(
           apiClient.nodes.delete(node.id),
           "Headscale didn't delete a node in time",

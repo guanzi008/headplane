@@ -15,11 +15,11 @@ export function makePolicyApi(
     get: async () => {
       const { policy, updatedAt } = await transport.request<{
         policy: string;
-        updatedAt: string;
+        updatedAt: string | null;
       }>({ method: "GET", path: "v1/policy", apiKey });
       return {
         policy,
-        updatedAt: updatedAt !== null ? new Date(updatedAt) : null,
+        updatedAt: parseUpdatedAt(updatedAt),
       };
     },
     set: async (policy) => {
@@ -30,4 +30,15 @@ export function makePolicyApi(
       return { policy: newPolicy, updatedAt: new Date(updatedAt) };
     },
   };
+}
+
+// File mode has no update timestamp, but Headscale 0.30 emits Go's zero
+// time instead of null. Treat it as absent so the policy stays read-only.
+const ZERO_TIME = new Date("0001-01-01T00:00:00Z").getTime();
+
+function parseUpdatedAt(value: string | null): Date | null {
+  if (value === null) return null;
+
+  const parsed = new Date(value);
+  return parsed.getTime() === ZERO_TIME ? null : parsed;
 }

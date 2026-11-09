@@ -1,8 +1,22 @@
 // The newest patch of every Headscale minor Headplane supports. CI runs one
-// job per version, listed in .github/workflows/build.yaml.
-export const HEADSCALE_VERSIONS = ["0.27.1", "0.28.0", "0.29.5"] as const;
+// job per version, listed in .github/workflows/build.yaml. 0.30 has not been
+// released yet, so its tests use Headscale's `development` image.
+export const HEADSCALE_VERSIONS = ["0.27.1", "0.28.0", "0.29.5", "0.30.0"] as const;
 export type HeadscaleVersion = (typeof HEADSCALE_VERSIONS)[number];
 export const LATEST_HEADSCALE = HEADSCALE_VERSIONS[HEADSCALE_VERSIONS.length - 1];
+
+export function headscaleImage(version: HeadscaleVersion) {
+  const tag = version === "0.30.0" ? "development" : version;
+  return `headscale/headscale:${tag}`;
+}
+
+export function headscaleVersionAtLeast(version: HeadscaleVersion, target: string) {
+  const [major, minor, patch] = version.split(".").map(Number);
+  const [targetMajor, targetMinor, targetPatch] = target.split(".").map(Number);
+  if (major !== targetMajor) return major > targetMajor;
+  if (minor !== targetMinor) return minor > targetMinor;
+  return patch >= targetPatch;
+}
 
 export const TAILSCALE_IMAGE = "tailscale/tailscale:v1.104.1";
 export const DEX_IMAGE = "dexidp/dex:v2.41.1";

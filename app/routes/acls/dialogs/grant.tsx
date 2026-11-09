@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import Link from "~/components/link";
 import TokenList from "~/components/token-list";
-import { isValidTagName, type Grant } from "~/utils/acl-policy";
+import { hasSinglePortRange, isValidTagName, type Grant } from "~/utils/acl-policy";
 
 import EditorDialog from "./editor-dialog";
 
@@ -10,6 +10,7 @@ interface GrantDialogProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   grant?: Grant;
+  grantIpAllowsOnePortRange: boolean;
   sources: string[];
   destinations: string[];
   onSave: (grant: Grant) => void;
@@ -22,6 +23,7 @@ export default function GrantDialog({
   isOpen,
   setIsOpen,
   grant,
+  grantIpAllowsOnePortRange,
   sources,
   destinations,
   onSave,
@@ -29,10 +31,13 @@ export default function GrantDialog({
   const [draft, setDraft] = useState<Grant>(() => structuredClone(grant ?? EMPTY));
 
   // A grant that only carries app capabilities has no `ip`.
+  const hasPortList =
+    grantIpAllowsOnePortRange && draft.ip.some((value) => !hasSinglePortRange(value));
   const isInvalid =
     draft.src.length === 0 ||
     draft.dst.length === 0 ||
-    (draft.ip.length === 0 && !("app" in draft.extra));
+    (draft.ip.length === 0 && !("app" in draft.extra)) ||
+    hasPortList;
 
   return (
     <EditorDialog
@@ -73,12 +78,17 @@ export default function GrantDialog({
         values={draft.dst}
       />
       <TokenList
-        description="Ports and protocols, for example tcp:443 or * for everything."
+        description={
+          grantIpAllowsOnePortRange
+            ? "Ports and protocols, for example tcp:443 or * for everything. Use one port or range per entry, so tcp:80 and tcp:443 instead of tcp:80,443."
+            : "Ports and protocols, for example tcp:443 or * for everything."
+        }
         emptyText="No ports yet"
         label="Ports and protocols"
         onChange={(ip) => setDraft({ ...draft, ip })}
         placeholder="tcp:443"
         suggestions={IP_SUGGESTIONS}
+        validate={grantIpAllowsOnePortRange ? hasSinglePortRange : undefined}
         values={draft.ip}
       />
       <TokenList

@@ -78,7 +78,7 @@ describe("Headplane's status", () => {
 
     const body = await ((await ask("info-secret")) as Response).json();
     expect(body).toMatchObject({ status: "healthy" });
-    expect(body.headscale_canonical_version).toContain(tailnet.version);
+    expect(body.headscale_canonical_version).toBe(tailnet.headscale.version.raw);
 
     // Without a secret configured, nobody gets in.
     await using closed = await createTestApp({ headscale: UNREACHABLE });

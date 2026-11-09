@@ -63,6 +63,7 @@ jobs:
           - { name: "Headscale 0.27.1", versions: "0.27.1", files: "-l" }
           - { name: "Headscale 0.28.0", versions: "0.28.0", files: "-l" }
           - { name: "Headscale 0.29.5", versions: "0.29.5", files: "-l" }
+          - { name: "Headscale 0.30.0 (development)", versions: "0.30.0", files: "-l" }
           - { name: "version independent", versions: "", files: "-L" }
     steps:
       - name: Check out the repo

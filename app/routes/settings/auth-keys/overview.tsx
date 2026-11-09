@@ -175,7 +175,7 @@ export default function Page({
       })
       .flatMap(({ preAuthKeys }) => preAuthKeys)
       .filter((key) => {
-        const isPastExpiry = new Date(key.expiration) < now;
+        const isPastExpiry = key.expiration !== null && new Date(key.expiration) < now;
 
         switch (status) {
           case null:

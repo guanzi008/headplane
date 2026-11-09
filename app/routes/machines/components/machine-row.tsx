@@ -63,6 +63,7 @@ export default function MachineRow({
   }, [magic, node.givenName, node.ipAddresses]);
 
   const isConnected = node.online && !node.expired;
+  const lastSeen = node.lastSeen ? new Date(node.lastSeen) : null;
   const [ipv4, ipv6] = [
     addresses.find((a) => a.label === "IPv4"),
     addresses.find((a) => a.label === "IPv6"),
@@ -154,9 +155,9 @@ export default function MachineRow({
           <span
             className="text-muted"
             suppressHydrationWarning
-            title={new Date(node.lastSeen).toLocaleString()}
+            title={lastSeen?.toLocaleString() ?? "Never seen"}
           >
-            {formatTimeDelta(new Date(node.lastSeen))}
+            {lastSeen === null ? "Never seen" : formatTimeDelta(lastSeen)}
           </span>
         )}
       </TableCell>

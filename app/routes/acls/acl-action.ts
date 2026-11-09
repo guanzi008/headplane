@@ -1,7 +1,7 @@
 import * as v from "valibot";
 
 import { authContext, headscaleContext, requestApiContext } from "~/server/context";
-import { isDataWithApiError } from "~/server/headscale/api/error-client";
+import { headscaleErrorMessage, isDataWithApiError } from "~/server/headscale/api/error-client";
 import { ActionError, createAction } from "~/server/web/actions";
 import { Capabilities } from "~/server/web/roles";
 import { parsePolicy } from "~/utils/acl-policy";
@@ -55,7 +55,7 @@ export const aclAction = createAction({
             );
           }
 
-          const message = error.data.data?.message;
+          const message = headscaleErrorMessage(error);
           const prefix = parseErrorPrefixes.find(
             (prefix) => typeof message === "string" && message.includes(prefix),
           );

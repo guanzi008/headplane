@@ -112,6 +112,17 @@ export function makeNodeApi(
     },
     toggleExpiry: async (nodeId, disableExpiry) => {
       const expiry = new Date(Date.now() + KEY_EXPIRY_DAYS * 86_400_000).toISOString();
+
+      if (capabilities.nodeExpiryUsesBody) {
+        await transport.request({
+          method: "POST",
+          path: `v1/node/${nodeId}/expire`,
+          apiKey,
+          body: disableExpiry ? { disableExpiry: true } : { expiry },
+        });
+        return;
+      }
+
       const query = disableExpiry ? "disableExpiry=true" : `expiry=${encodeURIComponent(expiry)}`;
 
       await transport.request({

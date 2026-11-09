@@ -217,7 +217,9 @@ export default function Page({ loaderData }: Route.ComponentProps) {
             comparison = a.online ? 1 : -1;
             break;
           }
-          comparison = new Date(a.lastSeen).getTime() - new Date(b.lastSeen).getTime();
+          comparison =
+            (a.lastSeen ? new Date(a.lastSeen).getTime() : 0) -
+            (b.lastSeen ? new Date(b.lastSeen).getTime() : 0);
           break;
         }
       }

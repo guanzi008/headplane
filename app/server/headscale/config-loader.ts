@@ -340,7 +340,7 @@ export async function loadHeadscaleConfig(path?: string, dnsPath?: string) {
   if (conflict.success && conflict.output.dns?.extra_records && extraRecordsPath) {
     log.warn(
       "config",
-      "Both dns.extra_records and dns.extra_records_path are set; Headplane will use the JSON records file",
+      "Both dns.extra_records and dns.extra_records_path are set; Headplane will use the records file",
     );
   }
 

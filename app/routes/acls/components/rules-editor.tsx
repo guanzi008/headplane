@@ -17,6 +17,7 @@ interface RulesEditorProps {
   onChange: (policy: Policy) => void;
   isDisabled: boolean;
   canEditGrants: boolean;
+  grantIpAllowsOnePortRange: boolean;
   sources: string[];
   destinations: string[];
 }
@@ -34,6 +35,7 @@ export default function RulesEditor({
   onChange,
   isDisabled,
   canEditGrants,
+  grantIpAllowsOnePortRange,
   sources,
   destinations,
 }: RulesEditorProps) {
@@ -150,6 +152,7 @@ export default function RulesEditor({
         <GrantDialog
           destinations={destinations}
           grant={grant}
+          grantIpAllowsOnePortRange={grantIpAllowsOnePortRange}
           isOpen
           onSave={saveGrant}
           setIsOpen={(open) => {

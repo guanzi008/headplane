@@ -436,6 +436,12 @@ export function isValidRoute(route: string): boolean {
   return isIpv6(route) && Number(prefixLength) <= 128;
 }
 
+// Headscale 0.30 accepts one port or contiguous range per grant `ip` entry.
+// A comma-separated list has to be split into separate entries.
+export function hasSinglePortRange(value: string): boolean {
+  return !value.includes(",");
+}
+
 // MARK: Internals
 
 function toStringListMap(value: unknown): Record<string, string[]> {

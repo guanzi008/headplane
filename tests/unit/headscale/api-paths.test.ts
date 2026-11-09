@@ -57,4 +57,47 @@ describe("Headscale API path encoding", () => {
       },
     ]);
   });
+
+  test("sends node expiry through the query string before Headscale 0.30", async () => {
+    const { calls, transport } = createTransportRecorder();
+    const oldCapabilities = capabilitiesFor(parseServerVersion("0.29.5"));
+
+    await makeNodeApi(transport, oldCapabilities, "api-key").toggleExpiry("7", true);
+    await makeNodeApi(transport, oldCapabilities, "api-key").toggleExpiry("7", false);
+
+    expect(calls).toHaveLength(2);
+    expect(calls[0]).toEqual({
+      method: "POST",
+      path: "v1/node/7/expire?disableExpiry=true",
+      apiKey: "api-key",
+    });
+    expect(calls[1]).toMatchObject({
+      method: "POST",
+      path: expect.stringMatching(/^v1\/node\/7\/expire\?expiry=/),
+      apiKey: "api-key",
+    });
+    expect(calls[1].body).toBeUndefined();
+  });
+
+  test("sends node expiry through the JSON body on Headscale 0.30", async () => {
+    const { calls, transport } = createTransportRecorder();
+    const newCapabilities = capabilitiesFor(parseServerVersion("0.30.0"));
+
+    await makeNodeApi(transport, newCapabilities, "api-key").toggleExpiry("7", true);
+    await makeNodeApi(transport, newCapabilities, "api-key").toggleExpiry("7", false);
+
+    expect(calls).toHaveLength(2);
+    expect(calls[0]).toEqual({
+      method: "POST",
+      path: "v1/node/7/expire",
+      apiKey: "api-key",
+      body: { disableExpiry: true },
+    });
+    expect(calls[1]).toMatchObject({
+      method: "POST",
+      path: "v1/node/7/expire",
+      apiKey: "api-key",
+      body: { expiry: expect.any(String) },
+    });
+  });
 });
