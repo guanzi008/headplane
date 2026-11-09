@@ -15,6 +15,7 @@ import { isDataUnauthorizedError } from "~/server/headscale/api/error-client";
 import { usersResource } from "~/server/headscale/live-store";
 import { isUserPrincipal } from "~/server/web/auth";
 import { Capabilities } from "~/server/web/roles";
+import { useI18n } from "~/utils/i18n";
 import log from "~/utils/log";
 
 import type { Route } from "./+types/app";
@@ -120,6 +121,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
+  const { t } = useI18n();
   return (
     <>
       <Header
@@ -132,10 +134,10 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
           <Callout
             className="mb-4"
             icon={<CloudOff />}
-            title="Can't reach Headscale"
+            title={t("app.headscaleUnreachable.title")}
             variant="error"
           >
-            Some data may be out of date, and changes won't save until it's back.
+            {t("app.headscaleUnreachable.body")}
           </Callout>
         )}
         <Outlet />

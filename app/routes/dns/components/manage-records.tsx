@@ -2,6 +2,7 @@ import ActionDialog from "~/components/action-dialog";
 import Code from "~/components/code";
 import Link from "~/components/link";
 import Section, { RemoveButton, Row, RowList } from "~/components/section";
+import { useI18n } from "~/utils/i18n";
 
 import AddRecord from "../dialogs/add-record";
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function ManageRecords({ records, hasRecordsFile, isDisabled, isReadOnly }: Props) {
+  const { t } = useI18n();
   const isLocked = isDisabled || isReadOnly;
 
   return (
@@ -20,10 +22,9 @@ export default function ManageRecords({ records, hasRecordsFile, isDisabled, isR
       action={isLocked ? undefined : <AddRecord />}
       description={
         <>
-          Point a name at an address for every device on the tailnet. Headscale supports A and AAAA
-          records.{" "}
+          {t("dns.records.description")}{" "}
           <Link external styled to="https://headscale.net/stable/ref/dns">
-            Docs
+            {t("common.docs")}
           </Link>
           {!isDisabled && isReadOnly && hasRecordsFile && (
             <>
@@ -41,10 +42,10 @@ export default function ManageRecords({ records, hasRecordsFile, isDisabled, isR
           )}
         </>
       }
-      title="DNS records"
+      title={t("dns.records.title")}
     >
       {records.length === 0 ? (
-        <p className="text-muted py-2.5 text-sm">No DNS records</p>
+        <p className="text-muted py-2.5 text-sm">{t("dns.records.empty")}</p>
       ) : (
         <RowList>
           {records.map((record) => (

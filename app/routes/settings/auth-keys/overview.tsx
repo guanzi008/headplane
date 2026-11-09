@@ -19,6 +19,7 @@ import { ownsHeadscaleUser } from "~/server/web/headscale-identity";
 import { Capabilities } from "~/server/web/roles";
 import type { PreAuthKey } from "~/types";
 import type { User } from "~/types/User";
+import { useI18n } from "~/utils/i18n";
 import log from "~/utils/log";
 import { toastClientAction } from "~/utils/toast";
 import { getUserDisplayName } from "~/utils/user";
@@ -125,14 +126,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 export const action = authKeysAction;
 export const clientAction = toastClientAction;
 
-const STATUS_OPTIONS = [
-  { value: "active", label: "Active" },
-  { value: "expired", label: "Expired" },
-  { value: "reusable", label: "Reusable" },
-  { value: "ephemeral", label: "Ephemeral" },
-] as const;
-
-type Status = (typeof STATUS_OPTIONS)[number]["value"];
+type Status = "active" | "expired" | "reusable" | "ephemeral";
 
 const TAG_ONLY = "__tag_only";
 
@@ -148,15 +142,24 @@ export default function Page({
     currentSubject,
   },
 }: Route.ComponentProps) {
+  const { t } = useI18n();
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [status, setStatus] = useState<Status | null>("active");
   const allKeys = keys.flatMap(({ preAuthKeys }) => preAuthKeys);
+  const statusOptions = [
+    { value: "active", label: t("settings.authKeys.active") },
+    { value: "expired", label: t("machines.expired") },
+    { value: "reusable", label: t("settings.authKeys.reusable") },
+    { value: "ephemeral", label: t("settings.authKeys.ephemeral") },
+  ] as const;
 
   const userOptions = [
     ...keys
       .filter((k): k is { user: User; preAuthKeys: PreAuthKey[] } => k.user !== null)
       .map(({ user }) => ({ value: user.id, label: getUserDisplayName(user) })),
-    ...(keys.some(({ user }) => user === null) ? [{ value: TAG_ONLY, label: "Tags only" }] : []),
+    ...(keys.some(({ user }) => user === null)
+      ? [{ value: TAG_ONLY, label: t("settings.authKeys.tagsOnly") }]
+      : []),
   ];
 
   const filteredKeys = useMemo(() => {
@@ -210,64 +213,64 @@ export default function Page({
         }
         description={
           <>
-            Register machines without signing in.{" "}
+            {t("settings.authKeys.description")}{" "}
             <Link external styled to="https://tailscale.com/kb/1085/auth-keys/">
-              Docs
+              {t("common.docs")}
             </Link>
           </>
         }
-        title="Auth keys"
+        title={t("settings.authKeys")}
       />
-      {!access && (
-        <Callout className="mb-6">
-          Your permissions don't allow creating auth keys. Ask an administrator to create one for
-          you.
-        </Callout>
-      )}
+      {!access && <Callout className="mb-6">{t("settings.authKeys.noAccess")}</Callout>}
       {missing.length > 0 && (
-        <Callout className="mb-6" title="Some keys couldn't be loaded" variant="error">
-          Headplane couldn't fetch the keys for{" "}
-          {missing.map(({ user }) => getUserDisplayName(user)).join(", ")}. Check the server logs
-          for details.
+        <Callout className="mb-6" title={t("settings.authKeys.missing.title")} variant="error">
+          {t("settings.authKeys.missing.body", {
+            users: missing.map(({ user }) => getUserDisplayName(user)).join(", "),
+          })}
         </Callout>
       )}
       {allKeys.length === 0 ? (
-        <p className="text-muted text-sm">No auth keys yet.</p>
+        <p className="text-muted text-sm">{t("settings.authKeys.empty")}</p>
       ) : (
         <>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             {userOptions.length > 1 && (
               <FilterDropdown
-                label="User"
+                label={t("common.user")}
                 onChange={setSelectedUser}
                 options={userOptions}
                 value={selectedUser}
               />
             )}
             <FilterDropdown
-              label="Status"
+              label={t("common.status")}
               onChange={(value) => setStatus(value as Status | null)}
-              options={STATUS_OPTIONS}
+              options={statusOptions}
               value={status}
             />
             <span className="text-muted ml-auto text-xs tabular-nums">
-              {filteredKeys.length} {filteredKeys.length === 1 ? "key" : "keys"}
+              {t(
+                filteredKeys.length === 1
+                  ? "settings.authKeys.keyCountOne"
+                  : "settings.authKeys.keyCount",
+                { count: filteredKeys.length },
+              )}
             </span>
           </div>
           {filteredKeys.length === 0 ? (
             <p className="text-muted border-line border-t py-2.5 text-sm">
-              No keys match these filters.
+              {t("settings.authKeys.noMatch")}
             </p>
           ) : (
             <Table>
               <thead>
                 <tr>
-                  <TableHeader>Key</TableHeader>
-                  <TableHeader>User</TableHeader>
-                  <TableHeader>Expires</TableHeader>
-                  <TableHeader>Created</TableHeader>
+                  <TableHeader>{t("settings.authKeys.key")}</TableHeader>
+                  <TableHeader>{t("common.user")}</TableHeader>
+                  <TableHeader>{t("common.expires")}</TableHeader>
+                  <TableHeader>{t("common.created")}</TableHeader>
                   <TableHeader className="w-20">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{t("common.actions")}</span>
                   </TableHeader>
                 </tr>
               </thead>

@@ -3,6 +3,7 @@ import Chip from "~/components/chip";
 import { TableCell } from "~/components/table";
 import type { Role } from "~/server/web/roles";
 import cn from "~/utils/cn";
+import { useI18n, type MessageKey } from "~/utils/i18n";
 import { formatTimeDelta } from "~/utils/time";
 
 import type { HeadplaneUserData } from "../overview";
@@ -28,6 +29,7 @@ export default function HeadplaneUserRow({
   policyGroups,
   policyHasComments,
 }: HeadplaneUserRowProps) {
+  const { t } = useI18n();
   const displayName = user.linkedHeadscaleUser?.displayName || user.name || user.email || user.sub;
   const displayUsername =
     user.linkedHeadscaleUser?.displayName &&
@@ -51,13 +53,13 @@ export default function HeadplaneUserRow({
                   {group}
                 </span>
               ))}
-              {!user.headscaleUserId && <Chip text="Not linked" variant="warn" />}
+              {!user.headscaleUserId && <Chip text={t("users.notLinked")} variant="warn" />}
             </div>
           </div>
         </div>
       </TableCell>
       <TableCell className={cn(user.role === "member" && "text-muted")}>
-        {mapRoleToName(user.role)}
+        {t(mapRoleToKey(user.role))}
       </TableCell>
       <TableCell className="text-muted whitespace-nowrap">
         {user.lastLoginAt ? (
@@ -65,7 +67,7 @@ export default function HeadplaneUserRow({
             {formatTimeDelta(new Date(user.lastLoginAt))}
           </span>
         ) : (
-          "Never"
+          t("users.never")
         )}
       </TableCell>
       <TableCell className="whitespace-nowrap">
@@ -87,23 +89,23 @@ export default function HeadplaneUserRow({
   );
 }
 
-function mapRoleToName(role: Role) {
+function mapRoleToKey(role: Role): MessageKey {
   switch (role) {
     case "owner":
-      return "Owner";
+      return "role.owner";
     case "admin":
-      return "Admin";
+      return "role.admin";
     case "network_admin":
-      return "Network Admin";
+      return "role.networkAdmin";
     case "it_admin":
-      return "IT Admin";
+      return "role.itAdmin";
     case "auditor":
-      return "Auditor";
+      return "role.auditor";
     case "viewer":
-      return "Viewer";
+      return "role.viewer";
     case "member":
-      return "Member";
+      return "role.member";
     default:
-      return "Unknown";
+      return "role.unknown";
   }
 }

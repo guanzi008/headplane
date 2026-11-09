@@ -1,50 +1,31 @@
 import Callout from "~/components/callout";
-import Code from "~/components/code";
+import { useI18n, type MessageKey } from "~/utils/i18n";
 
 export function OidcErrorNotice({ code }: { code: string }) {
+  const { t } = useI18n();
   return (
-    <Callout className="mb-6" title="Single sign-on failed" variant="error">
-      {getErrorMessage(code)}
+    <Callout className="mb-6" title={t("auth.oidc.failed.title")} variant="error">
+      <p>{t(getErrorMessageKey(code))}</p>
     </Callout>
   );
 }
 
-function getErrorMessage(code: string) {
+function getErrorMessageKey(code: string): MessageKey {
   switch (code) {
     case "error_no_query":
-      return (
-        <p>
-          The SSO provider did not correctly redirect back to Headplane with the required
-          parameters. Please ensure your SSO provider is configured correctly.
-        </p>
-      );
+      return "auth.oidc.noQuery";
 
     case "error_no_session":
     case "error_invalid_session":
-      return (
-        <p>
-          Unable to complete SSO login due to missing or invalid session data. Ensure that your
-          Headplane cookie configuration is correct and that your browser is accepting cookies.
-        </p>
-      );
+      return "auth.oidc.noSession";
 
     case "error_no_sub":
-      return (
-        <p>
-          The SSO provider did not return a valid user identifier. Please ensure your SSO provider
-          is correctly configured to provide the <Code>sub</Code> claim.
-        </p>
-      );
+      return "auth.oidc.noSub";
 
     case "error_auth_failed":
-      return (
-        <p>
-          Authentication with the SSO provider failed. Please try again later. Headplane logs may
-          provide more information.
-        </p>
-      );
+      return "auth.oidc.authFailed";
 
     default:
-      return <p>An unknown error occurred during OIDC authentication. Please try again later.</p>;
+      return "auth.oidc.unknown";
   }
 }

@@ -4,6 +4,7 @@ import { useRevalidator } from "react-router";
 
 import cn from "~/utils/cn";
 import { describeError, type ErrorInfo } from "~/utils/describe-error";
+import { useI18n, type MessageKey } from "~/utils/i18n";
 
 import Button from "./button";
 import Link from "./link";
@@ -22,21 +23,41 @@ interface Props {
 }
 
 export default function PageError({ error, page = "this page" }: Props) {
+  const { t } = useI18n();
   const { revalidate, state } = useRevalidator();
   const info = describeError(error);
   const Icon = icons[info.kind];
+  const pageKeys: Record<string, MessageKey> = {
+    "this page": "error.page.thisPage",
+    machines: "error.page.machines",
+    users: "error.page.users",
+    "DNS settings": "error.page.dns",
+    "the access control policy": "error.page.acls",
+    "auth keys": "error.page.authKeys",
+    "the agent": "error.page.settings",
+    "sign-in restrictions": "error.page.settings",
+  };
+  const pageLabel = pageKeys[page] ? t(pageKeys[page]) : page;
 
   const title =
     info.kind === "connection"
-      ? `Can't load ${page}`
+      ? t("error.cantLoad", { page: pageLabel })
       : info.kind === "forbidden"
-        ? `You don't have access to ${page}`
-        : info.title;
+        ? t("error.forbidden", { page: pageLabel })
+        : info.kind === "not_found"
+          ? t("error.notFound.title")
+          : info.kind === "headscale"
+            ? t("error.headscale.title")
+            : t("error.unknown.title");
 
   const description =
     info.kind === "connection"
-      ? "This page needs Headscale to load. Try again once it's back."
-      : info.description;
+      ? t("error.connection.body")
+      : info.kind === "not_found"
+        ? t("error.notFound.body")
+        : info.kind === "unknown"
+          ? t("error.unknown.body")
+          : info.description;
 
   const canRetry = info.kind !== "forbidden" && info.kind !== "not_found";
 
@@ -46,7 +67,7 @@ export default function PageError({ error, page = "this page" }: Props) {
         <div className="mt-6 flex items-center gap-4">
           {canRetry && (
             <Button onClick={() => revalidate()} pending={state === "loading"}>
-              Try again
+              {t("error.tryAgain")}
             </Button>
           )}
           {info.kind === "unknown" && <ReportLink />}
@@ -76,9 +97,12 @@ export function ErrorState({ icon, title, description, children }: ErrorStatePro
 }
 
 export function ErrorDetails({ details, className }: { details: string; className?: string }) {
+  const { t } = useI18n();
   return (
     <details className={cn("mt-6 w-full max-w-lg text-left", className)}>
-      <summary className="text-muted hover:text-fg w-fit cursor-pointer text-sm">Details</summary>
+      <summary className="text-muted hover:text-fg w-fit cursor-pointer text-sm">
+        {t("error.details")}
+      </summary>
       <pre className="bg-subtle mt-2 overflow-x-auto rounded-md p-3 font-mono text-xs break-all whitespace-pre-wrap">
         {details}
       </pre>
@@ -87,9 +111,10 @@ export function ErrorDetails({ details, className }: { details: string; classNam
 }
 
 export function ReportLink() {
+  const { t } = useI18n();
   return (
     <Link external styled to="https://github.com/tale/headplane/issues/new">
-      Report an issue
+      {t("error.report")}
     </Link>
   );
 }

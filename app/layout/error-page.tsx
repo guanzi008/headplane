@@ -4,8 +4,10 @@ import Button from "~/components/button";
 import { ErrorDetails, ReportLink } from "~/components/page-error";
 import Shell from "~/routes/auth/login/shell";
 import { describeError } from "~/utils/describe-error";
+import { useI18n } from "~/utils/i18n";
 
 export default function ErrorPage({ error }: { error: unknown }) {
+  const { t } = useI18n();
   const info = describeError(error);
   const canRetry = info.kind !== "forbidden" && info.kind !== "not_found";
 
@@ -14,7 +16,7 @@ export default function ErrorPage({ error }: { error: unknown }) {
       <div className="flex flex-wrap items-center gap-3">
         {canRetry && (
           <Button onClick={() => window.location.reload()} variant="primary">
-            Try again
+            {t("error.tryAgain")}
           </Button>
         )}
         <Button
@@ -22,7 +24,7 @@ export default function ErrorPage({ error }: { error: unknown }) {
           render={<RouterLink reloadDocument to="/" />}
           variant={canRetry ? "secondary" : "primary"}
         >
-          Go to Headplane
+          {t("error.goHeadplane")}
         </Button>
         {info.kind === "unknown" && (
           <span className="ml-1 text-sm">

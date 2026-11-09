@@ -3,6 +3,7 @@ import Callout from "~/components/callout";
 import Chip from "~/components/chip";
 import Link from "~/components/link";
 import Section, { RemoveButton, Row, RowList } from "~/components/section";
+import { useI18n } from "~/utils/i18n";
 
 import AddNS from "../dialogs/add-ns";
 import { useReorder } from "./reorder";
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function ManageNS({ global, split, isDisabled }: Props) {
+  const { t } = useI18n();
   const reorder = useReorder("move_ns", "nameserver");
 
   // Global servers come first, then each split domain's servers. Order only
@@ -34,14 +36,13 @@ export default function ManageNS({ global, split, isDisabled }: Props) {
       action={isDisabled ? undefined : <AddNS />}
       description={
         <>
-          The servers devices use for names outside the tailnet, preferring ones higher in the list.
-          A server marked with a domain only answers for that domain.{" "}
+          {t("dns.nameservers.description")}{" "}
           <Link external styled to="https://tailscale.com/kb/1054/dns">
-            Docs
+            {t("common.docs")}
           </Link>
         </>
       }
-      title="Nameservers"
+      title={t("dns.nameservers.title")}
     >
       {reorder.error && (
         <Callout className="mb-3" variant="error">
@@ -49,9 +50,7 @@ export default function ManageNS({ global, split, isDisabled }: Props) {
         </Callout>
       )}
       {rows.length === 0 ? (
-        <p className="text-muted py-2.5 text-sm">
-          No nameservers. Devices use their own DNS settings.
-        </p>
+        <p className="text-muted py-2.5 text-sm">{t("dns.nameservers.empty")}</p>
       ) : (
         <RowList>
           {rows.map(({ ns, domain, list, index }) => (

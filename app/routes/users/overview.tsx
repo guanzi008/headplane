@@ -18,6 +18,7 @@ import { Capabilities, Roles } from "~/server/web/roles";
 import type { Role } from "~/server/web/roles";
 import type { Machine, User } from "~/types";
 import { groupsForUser, parsePolicy } from "~/utils/acl-policy";
+import { useI18n } from "~/utils/i18n";
 import log from "~/utils/log";
 import { toastClientAction } from "~/utils/toast";
 import { getUserDisplayName } from "~/utils/user";
@@ -188,6 +189,7 @@ export const action = userAction;
 export const clientAction = toastClientAction;
 
 export default function Page({ loaderData }: Route.ComponentProps) {
+  const { t } = useI18n();
   return (
     <>
       <PageHeader
@@ -197,22 +199,21 @@ export default function Page({ loaderData }: Route.ComponentProps) {
         description={
           loaderData.oidc ? (
             <>
-              People who can sign in to Headplane, managed through your{" "}
+              {t("users.oidcDescription")}{" "}
               <Link external styled to={loaderData.oidc.issuer}>
-                OIDC provider
+                {t("users.oidcLink")}
               </Link>
-              .
             </>
           ) : (
             <>
-              People in your tailnet, managed locally.{" "}
+              {t("users.localDescription")}{" "}
               <Link external styled to="https://headscale.net/stable/ref/oidc">
-                Set up OIDC
+                {t("users.oidcSetup")}
               </Link>
             </>
           )
         }
-        title="Users"
+        title={t("users.title")}
       />
 
       {loaderData.apiError && (
@@ -222,19 +223,19 @@ export default function Page({ loaderData }: Route.ComponentProps) {
       )}
 
       <section>
-        <h2 className="mb-2 font-semibold">Headplane users</h2>
+        <h2 className="mb-2 font-semibold">{t("users.headplaneUsers")}</h2>
         {loaderData.headplaneUsers.length === 0 ? (
-          <p className="text-muted text-sm">No users have signed into Headplane yet.</p>
+          <p className="text-muted text-sm">{t("users.noHeadplaneUsers")}</p>
         ) : (
           <Table>
             <thead>
               <tr>
-                <TableHeader>User</TableHeader>
-                <TableHeader>Role</TableHeader>
-                <TableHeader>Last login</TableHeader>
-                <TableHeader>Last seen</TableHeader>
+                <TableHeader>{t("common.user")}</TableHeader>
+                <TableHeader>{t("common.role")}</TableHeader>
+                <TableHeader>{t("common.lastLogin")}</TableHeader>
+                <TableHeader>{t("common.lastSeen")}</TableHeader>
                 <TableHeader className="w-12">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t("common.actions")}</span>
                 </TableHeader>
               </tr>
             </thead>
@@ -258,18 +259,16 @@ export default function Page({ loaderData }: Route.ComponentProps) {
 
       {!loaderData.apiError && loaderData.unlinkedHeadscaleUsers.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-semibold">Unlinked Headscale users</h2>
-          <p className="text-muted mb-2 text-sm">
-            These Headscale users have no Headplane account, so Headplane can't manage their access.
-          </p>
+          <h2 className="font-semibold">{t("users.unlinked")}</h2>
+          <p className="text-muted mb-2 text-sm">{t("users.unlinkedDescription")}</p>
           <Table>
             <thead>
               <tr>
-                <TableHeader>User</TableHeader>
-                <TableHeader>Created</TableHeader>
-                <TableHeader>Last seen</TableHeader>
+                <TableHeader>{t("common.user")}</TableHeader>
+                <TableHeader>{t("common.created")}</TableHeader>
+                <TableHeader>{t("common.lastSeen")}</TableHeader>
                 <TableHeader className="w-12">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t("common.actions")}</span>
                 </TableHeader>
               </tr>
             </thead>

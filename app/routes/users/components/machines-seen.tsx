@@ -1,3 +1,4 @@
+import { useI18n } from "~/utils/i18n";
 import { formatTimeDelta } from "~/utils/time";
 
 interface MachinesSeenProps {
@@ -5,19 +6,20 @@ interface MachinesSeenProps {
 }
 
 export default function MachinesSeen({ machines }: MachinesSeenProps) {
+  const { t } = useI18n();
   if (machines.length === 0) {
-    return <span className="text-muted">No machines</span>;
+    return <span className="text-muted">{t("users.noMachines")}</span>;
   }
 
   if (machines.some((machine) => machine.online)) {
-    return <span className="text-ok">Connected</span>;
+    return <span className="text-ok">{t("machines.connected")}</span>;
   }
 
   const seen = machines.flatMap((machine) =>
     machine.lastSeen ? [new Date(machine.lastSeen).getTime()] : [],
   );
   if (seen.length === 0) {
-    return <span className="text-muted">Never seen</span>;
+    return <span className="text-muted">{t("users.neverSeen")}</span>;
   }
 
   const lastSeen = new Date(Math.max(...seen));

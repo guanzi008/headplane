@@ -5,7 +5,6 @@ import { isRouteErrorResponse, useFetcher } from "react-router";
 
 import Button from "~/components/button";
 import Callout from "~/components/callout";
-import Code from "~/components/code";
 import Link from "~/components/link";
 import PageError, { ErrorState } from "~/components/page-error";
 import PageHeader from "~/components/page-header";
@@ -19,6 +18,7 @@ import {
   type Policy,
 } from "~/utils/acl-policy";
 import type { ActionResult } from "~/utils/form";
+import { useI18n } from "~/utils/i18n";
 import { toastClientAction } from "~/utils/toast";
 
 import type { Route } from "./+types/overview";
@@ -50,6 +50,7 @@ export default function Page({
     tagUsage,
   },
 }: Route.ComponentProps) {
+  const { t } = useI18n();
   const [codePolicy, setCodePolicy] = useState(policy);
   const [savedPolicy, setSavedPolicy] = useState(policy);
   if (savedPolicy !== policy) {
@@ -80,13 +81,8 @@ export default function Page({
     if (!parsed.ok) {
       return (
         <div className="p-4">
-          <Callout
-            className="my-4 max-w-2xl"
-            title="Policy cannot be edited visually"
-            variant="error"
-          >
-            The policy could not be parsed ({parsed.error}). Fix it in the <Code>Edit file</Code>{" "}
-            tab and the visual editor will come back.
+          <Callout className="my-4 max-w-2xl" title={t("acls.parseError.title")} variant="error">
+            {t("acls.parseError.body", { error: parsed.error })}
           </Callout>
         </div>
       );
@@ -95,9 +91,8 @@ export default function Page({
     return (
       <div className="flex flex-col gap-4 p-4">
         {parsed.hasComments ? (
-          <Callout className="my-4 max-w-2xl" title="Comments will be removed" variant="warning">
-            This policy contains comments. Saving a change made in the visual editor rewrites the
-            policy and drops them.
+          <Callout className="my-4 max-w-2xl" title={t("acls.comments.title")} variant="warning">
+            {t("acls.comments.body")}
           </Callout>
         ) : null}
         {render(parsed.policy)}
@@ -110,68 +105,62 @@ export default function Page({
       <PageHeader
         description={
           <>
-            The ACL file is used to define the access control rules for your network. You can find
-            more information about the ACL file in the{" "}
+            {t("acls.description")}{" "}
             <Link external styled to="https://tailscale.com/kb/1018/acls">
-              Tailscale ACL guide
+              {t("acls.tailscaleGuide")}
             </Link>{" "}
-            and the{" "}
+            /{" "}
             <Link external styled to="https://headscale.net/stable/ref/acls/">
-              Headscale docs
+              {t("acls.headscaleDocs")}
             </Link>
-            .
           </>
         }
-        title="Access Control List (ACL)"
+        title={t("acls.pageTitle")}
       />
       {!access ? (
-        <Callout className="my-4 max-w-2xl" title="ACL Policy restricted" variant="warning">
-          You do not have the necessary permissions to edit the Access Control List policy. Please
-          contact your administrator to request access or to make changes to the ACL policy.
+        <Callout className="my-4 max-w-2xl" title={t("acls.restricted.title")} variant="warning">
+          {t("acls.restricted.body")}
         </Callout>
       ) : !writable ? (
-        <Callout className="my-4 max-w-2xl" title="Read-only ACL Policy" variant="error">
-          The ACL policy mode is most likely set to <Code>file</Code> in your Headscale
-          configuration. This means that the ACL file cannot be edited through the web interface. In
-          order to resolve this, you'll need to set <Code>policy.mode</Code> to{" "}
-          <Code>database</Code> in your Headscale configuration.
+        <Callout className="my-4 max-w-2xl" title={t("acls.readOnly.title")} variant="error">
+          {t("acls.readOnly.body")}
         </Callout>
       ) : undefined}
       {fetcher.data?.ok === false && (
-        <Callout className="my-4 max-w-2xl" title="Couldn't save the policy" variant="error">
+        <Callout className="my-4 max-w-2xl" title={t("acls.saveFailed.title")} variant="error">
           {fetcher.data.errors.form ?? fetcher.data.errors.policy}
         </Callout>
       )}
-      <Tabs className="mb-4" label="ACL Editor" defaultValue="rules">
+      <Tabs className="mb-4" label={t("acls.editor")} defaultValue="rules">
         <TabsList>
           <TabsTab value="rules">
             <div className="flex items-center gap-2">
               <Shield className="p-1" />
-              <span>Rules</span>
+              <span>{t("acls.rules")}</span>
             </div>
           </TabsTab>
           <TabsTab value="tags">
             <div className="flex items-center gap-2">
               <TagsIcon className="p-1" />
-              <span>Tags &amp; Groups</span>
+              <span>{t("acls.tagsGroups")}</span>
             </div>
           </TabsTab>
           <TabsTab value="edit">
             <div className="flex items-center gap-2">
               <Pencil className="p-1" />
-              <span>Edit file</span>
+              <span>{t("acls.editFile")}</span>
             </div>
           </TabsTab>
           <TabsTab value="diff">
             <div className="flex items-center gap-2">
               <Eye className="p-1" />
-              <span>Preview changes</span>
+              <span>{t("acls.previewChanges")}</span>
             </div>
           </TabsTab>
           <TabsTab value="preview">
             <div className="flex items-center gap-2">
               <FlaskConical className="p-1" />
-              <span>Preview rules</span>
+              <span>{t("acls.previewRules")}</span>
             </div>
           </TabsTab>
         </TabsList>
@@ -212,10 +201,7 @@ export default function Page({
         <TabsPanel value="preview">
           <div className="flex flex-col items-center py-8">
             <Construction />
-            <p className="mt-4 w-1/2 text-center">
-              Previewing rules is not available yet. This feature is still in development and is
-              pretty complicated to implement. Hopefully I will be able to get to it soon.
-            </p>
+            <p className="mt-4 w-1/2 text-center">{t("acls.previewUnavailable")}</p>
           </div>
         </TabsPanel>
       </Tabs>
@@ -233,7 +219,7 @@ export default function Page({
         }}
         variant="primary"
       >
-        Save
+        {t("common.save")}
       </Button>
       <Button
         disabled={disabled || fetcher.state !== "idle" || codePolicy === policy}
@@ -242,13 +228,14 @@ export default function Page({
           setCodePolicy(policy);
         }}
       >
-        Discard changes
+        {t("acls.discard")}
       </Button>
     </div>
   );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const { t } = useI18n();
   if (
     isRouteErrorResponse(error) &&
     isApiError(error.data) &&
@@ -257,15 +244,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   ) {
     return (
       <ErrorState
-        description={
-          <>
-            Headscale is set to read its policy from a file, and that file doesn't exist. Create it
-            at the path in Headscale's config, or set <Code>policy.mode</Code> to{" "}
-            <Code>database</Code> so Headplane can manage the policy here.
-          </>
-        }
+        description={t("acls.missingFile.body")}
         icon={<FileX />}
-        title="The policy file is missing"
+        title={t("acls.missingFile.title")}
       />
     );
   }

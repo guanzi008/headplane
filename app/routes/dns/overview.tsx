@@ -6,6 +6,7 @@ import PageError from "~/components/page-error";
 import PageHeader from "~/components/page-header";
 import { authContext, headscaleConfigContext, integrationContext } from "~/server/context";
 import { Capabilities } from "~/server/web/roles";
+import { useI18n } from "~/utils/i18n";
 import { toastClientAction } from "~/utils/toast";
 
 import type { Route } from "./+types/overview";
@@ -46,6 +47,7 @@ export const action = dnsAction;
 export const clientAction = toastClientAction;
 
 export default function Page() {
+  const { t } = useI18n();
   const data = useLoaderData<typeof loader>();
   const isDisabled = data.access === false || data.writable === false;
 
@@ -54,30 +56,27 @@ export default function Page() {
       <PageHeader
         description={
           <>
-            Control how devices on your tailnet resolve names.{" "}
+            {t("dns.description")}{" "}
             <Link external styled to="https://headscale.net/stable/ref/dns">
-              Docs
+              {t("common.docs")}
             </Link>
           </>
         }
-        title="DNS"
+        title={t("dns.title")}
       />
       <div className="max-w-5xl">
         {isDisabled && (
           <Callout className="mb-6">
-            {data.writable
-              ? "Your permissions don't allow changes to DNS settings."
-              : "The Headscale configuration is read-only, so DNS settings can't be changed here."}
+            {data.writable ? t("dns.permissionDenied") : t("dns.readOnly")}
           </Callout>
         )}
         {!isDisabled && !data.isAutoApplied && (
           <Callout className="mb-6" variant="warning">
-            Changes are saved to the Headscale configuration but only take effect once Headscale
-            restarts. Set up an{" "}
+            {t("dns.restart.before")}{" "}
             <Link external styled to="https://headplane.net/configuration/integrations">
-              integration
+              {t("dns.restart.link")}
             </Link>{" "}
-            to restart it automatically.
+            {t("dns.restart.after")}
           </Callout>
         )}
         <General

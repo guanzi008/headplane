@@ -1,6 +1,7 @@
 import ActionDialog from "~/components/action-dialog";
 import Callout from "~/components/callout";
 import Section, { RemoveButton, Row, RowList } from "~/components/section";
+import { useI18n } from "~/utils/i18n";
 
 import AddDomain from "../dialogs/add-domain";
 import { useReorder } from "./reorder";
@@ -12,14 +13,15 @@ interface Props {
 }
 
 export default function ManageDomains({ searchDomains, isDisabled, magic }: Props) {
+  const { t } = useI18n();
   const reorder = useReorder("move_domain", "domain");
   const domains = reorder.order(searchDomains);
 
   return (
     <Section
       action={isDisabled ? undefined : <AddDomain />}
-      description="Devices try these suffixes, in order, when resolving a short name. With Magic DNS on, your tailnet domain always comes first."
-      title="Search domains"
+      description={t("dns.domains.description")}
+      title={t("dns.domains.title")}
     >
       {reorder.error && (
         <Callout className="mb-3" variant="error">
@@ -27,11 +29,11 @@ export default function ManageDomains({ searchDomains, isDisabled, magic }: Prop
         </Callout>
       )}
       {!magic && domains.length === 0 ? (
-        <p className="text-muted py-2.5 text-sm">No search domains</p>
+        <p className="text-muted py-2.5 text-sm">{t("dns.domains.empty")}</p>
       ) : (
         <RowList>
           {magic && (
-            <Row action={<span className="text-muted px-2">Magic DNS</span>}>
+            <Row action={<span className="text-muted px-2">{t("dns.magicDns")}</span>}>
               <span className="font-mono text-xs break-all">{magic}</span>
             </Row>
           )}

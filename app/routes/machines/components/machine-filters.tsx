@@ -4,21 +4,11 @@ import type { JSX } from "react";
 import Button from "~/components/button";
 import FilterDropdown from "~/components/filter-dropdown";
 import type { User } from "~/types/User";
+import { useI18n } from "~/utils/i18n";
 import type { PopulatedNode } from "~/utils/node-info";
 import { getUserDisplayName, sortUsersByDisplayName } from "~/utils/user";
 
 import { useMachineFilterParams } from "../hooks/use-machine-filter-params";
-
-const STATUS_OPTIONS = [
-  { value: "online", label: "Online" },
-  { value: "offline", label: "Offline" },
-  { value: "expired", label: "Expired" },
-] as const;
-
-const ROUTE_OPTIONS = [
-  { value: "exit-node", label: "Exit node" },
-  { value: "subnet", label: "Subnet router" },
-] as const;
 
 interface MachineFiltersProps {
   users: User[];
@@ -26,6 +16,7 @@ interface MachineFiltersProps {
 }
 
 export function MachineFilters({ users, populatedNodes }: MachineFiltersProps): JSX.Element {
+  const { t } = useI18n();
   const {
     filterUser,
     filterTag,
@@ -37,8 +28,17 @@ export function MachineFilters({ users, populatedNodes }: MachineFiltersProps): 
   } = useMachineFilterParams();
 
   const tagOwnedExists = populatedNodes.some((n) => !n.user);
+  const statusOptions = [
+    { value: "online", label: t("machines.online") },
+    { value: "offline", label: t("machines.offline") },
+    { value: "expired", label: t("machines.expired") },
+  ] as const;
+  const routeOptions = [
+    { value: "exit-node", label: t("machines.exitNode") },
+    { value: "subnet", label: t("machines.subnetRouter") },
+  ] as const;
   const userOptions = [
-    ...(tagOwnedExists ? [{ value: "tag-owned", label: "Tag-owned" }] : []),
+    ...(tagOwnedExists ? [{ value: "tag-owned", label: t("machines.tagOwned") }] : []),
     ...sortUsersByDisplayName(users).map((u) => ({ value: u.name, label: getUserDisplayName(u) })),
   ];
 
@@ -51,7 +51,7 @@ export function MachineFilters({ users, populatedNodes }: MachineFiltersProps): 
     <>
       {userOptions.length > 0 && (
         <FilterDropdown
-          label="User"
+          label={t("machines.filterUser")}
           onChange={(v) => setParam("user", v)}
           options={userOptions}
           value={filterUser}
@@ -59,27 +59,27 @@ export function MachineFilters({ users, populatedNodes }: MachineFiltersProps): 
       )}
       {tagOptions.length > 0 && (
         <FilterDropdown
-          label="Tag"
+          label={t("machines.filterTag")}
           onChange={(v) => setParam("tag", v)}
           options={tagOptions}
           value={filterTag}
         />
       )}
       <FilterDropdown
-        label="Status"
+        label={t("machines.filterStatus")}
         onChange={(v) => setParam("status", v)}
-        options={STATUS_OPTIONS}
+        options={statusOptions}
         value={filterStatus}
       />
       <FilterDropdown
-        label="Route"
+        label={t("machines.filterRoute")}
         onChange={(v) => setParam("route", v)}
-        options={ROUTE_OPTIONS}
+        options={routeOptions}
         value={filterRoute}
       />
       {hasActiveFilters && (
         <Button onClick={clearFilters} variant="ghost">
-          Clear filters
+          {t("machines.clearFilters")}
           <X className="size-3.5" />
         </Button>
       )}

@@ -2,7 +2,6 @@ import { Info, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 
-import Code from "~/components/code";
 import Input from "~/components/input";
 import Link from "~/components/link";
 import PageError from "~/components/page-error";
@@ -30,6 +29,7 @@ import { latestTailscaleVersion } from "~/server/tailscale-release";
 import { isUserPrincipal } from "~/server/web/auth";
 import { Capabilities } from "~/server/web/roles";
 import cn from "~/utils/cn";
+import { useI18n } from "~/utils/i18n";
 import {
   extractTagOwnerTags,
   mapNodes,
@@ -126,6 +126,7 @@ const ROUTE_MATCH: Record<string, (n: PopulatedNode) => boolean> = {
 };
 
 export default function Page({ loaderData }: Route.ComponentProps) {
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -263,29 +264,29 @@ export default function Page({ loaderData }: Route.ComponentProps) {
         }
         description={
           <>
-            Devices connected to your tailnet.{" "}
+            {t("machines.description")}{" "}
             <Link external styled to="https://tailscale.com/kb/1372/manage-devices">
-              Docs
+              {t("common.docs")}
             </Link>
           </>
         }
-        title="Machines"
+        title={t("machines.title")}
       />
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="relative w-64 max-w-full">
           <Search className="text-faint pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
           <Input
             className="[&_input]:pl-8"
-            label="Search machines"
+            label={t("machines.search")}
             labelHidden
             maxLength={100}
             onChange={setSearchQuery}
-            placeholder="Search by name or IP"
+            placeholder={t("machines.searchPlaceholder")}
             value={searchQuery}
           />
           {searchQuery && (
             <button
-              aria-label="Clear search"
+              aria-label={t("machines.clearSearch")}
               className={cn(
                 "absolute right-2 top-1/2 -translate-y-1/2",
                 "p-1 rounded-full",
@@ -302,15 +303,18 @@ export default function Page({ loaderData }: Route.ComponentProps) {
         <MachineFilters users={loaderData.users} populatedNodes={loaderData.populatedNodes} />
         <span className="text-muted ml-auto text-xs whitespace-nowrap tabular-nums">
           {searchQuery || hasActiveFilters
-            ? `Showing ${filteredAndSortedNodes.length} of ${loaderData.populatedNodes.length} machines`
-            : `${loaderData.populatedNodes.length} machines`}
+            ? t("machines.filteredCount", {
+                shown: filteredAndSortedNodes.length,
+                total: loaderData.populatedNodes.length,
+              })
+            : t("machines.count", { count: loaderData.populatedNodes.length })}
         </span>
       </div>
       <Table>
         <thead>
           <tr>
             <SortHeader field="name" {...sortProps}>
-              Name
+              {t("common.name")}
             </SortHeader>
             <SortHeader
               className="w-1/4"
@@ -321,8 +325,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                     <Tooltip
                       content={
                         <span className="font-normal">
-                          Since MagicDNS is enabled, you can access devices based on their name and
-                          also at <Code>[name].{loaderData.magic}</Code>
+                          {t("machines.magicDnsTooltip", { domain: loaderData.magic ?? "" })}
                         </span>
                       }
                     >
@@ -333,18 +336,18 @@ export default function Page({ loaderData }: Route.ComponentProps) {
               }
               {...sortProps}
             >
-              Addresses
+              {t("common.address")}
             </SortHeader>
             {loaderData.agent !== undefined ? (
               <SortHeader field="version" {...sortProps}>
-                Version
+                {t("common.version")}
               </SortHeader>
             ) : undefined}
             <SortHeader field="lastSeen" {...sortProps}>
-              Last seen
+              {t("common.lastSeen")}
             </SortHeader>
             <TableHeader className="w-12">
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t("common.actions")}</span>
             </TableHeader>
           </tr>
         </thead>
@@ -355,7 +358,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                 className="text-muted py-8 text-center"
                 colSpan={loaderData.agent !== undefined ? 5 : 4}
               >
-                No machines match the current filters
+                {t("machines.empty")}
               </TableCell>
             </tr>
           ) : (

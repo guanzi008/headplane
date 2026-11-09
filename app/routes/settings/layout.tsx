@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router";
 import PageHeader from "~/components/page-header";
 import { authContext, headscaleConfigContext } from "~/server/context";
 import cn from "~/utils/cn";
+import { useI18n, type MessageKey } from "~/utils/i18n";
 
 import type { Route } from "./+types/layout";
 
@@ -16,22 +17,20 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export default function Layout({ loaderData }: Route.ComponentProps) {
-  const items = [
-    { to: "/settings/auth-keys", label: "Auth keys" },
+  const { t } = useI18n();
+  const items: { to: string; label: MessageKey }[] = [
+    { to: "/settings/auth-keys", label: "settings.authKeys" },
     ...(loaderData.hasRestrictions
-      ? [{ to: "/settings/restrictions", label: "Sign-in restrictions" }]
+      ? [{ to: "/settings/restrictions", label: "settings.restrictions" as const }]
       : []),
-    { to: "/settings/agent", label: "Agent" },
+    { to: "/settings/agent", label: "settings.agent" },
   ];
 
   return (
     <>
-      <PageHeader
-        description="How machines join your tailnet, who can sign in, and the Headplane agent."
-        title="Settings"
-      />
+      <PageHeader description={t("settings.description")} title={t("settings.title")} />
       <div className="grid gap-x-12 gap-y-6 md:grid-cols-[11rem_minmax(0,1fr)]">
-        <nav aria-label="Settings" className="min-w-0">
+        <nav aria-label={t("settings.title")} className="min-w-0">
           <ul className="-mx-2 flex gap-1 overflow-x-auto md:mx-0 md:flex-col">
             {items.map((item) => (
               <li key={item.to}>
@@ -47,7 +46,7 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
                   prefetch="intent"
                   to={item.to}
                 >
-                  {item.label}
+                  {t(item.label)}
                 </NavLink>
               </li>
             ))}

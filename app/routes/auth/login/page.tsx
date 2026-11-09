@@ -8,6 +8,7 @@ import Input from "~/components/input";
 import Link from "~/components/link";
 import { appConfigContext, authContext, oidcContext } from "~/server/context";
 import type { OidcError, OidcService } from "~/server/oidc/provider";
+import { useI18n } from "~/utils/i18n";
 import { useLiveData } from "~/utils/live-data";
 import log from "~/utils/log";
 
@@ -77,6 +78,7 @@ function logLoginOidcError(context: string, error: OidcError): void {
 }
 
 export default function Page({ loaderData, actionData }: Route.ComponentProps) {
+  const { t } = useI18n();
   const { isCookieSecureEnabled, isOidcConnectorEnabled, oidcErrorCodes, urlState } = loaderData;
 
   const [showCookieWarning, setShowCookieWarning] = useState(false);
@@ -126,16 +128,16 @@ export default function Page({ loaderData, actionData }: Route.ComponentProps) {
   ) : oidcErrorCodes.length > 0 ? (
     <OidcConfigErrorNotice errors={oidcErrorCodes} />
   ) : showCookieWarning ? (
-    <Callout className="mb-6" title="Sign-in won't work over HTTP" variant="error">
-      Headplane is set to use secure cookies, but this page was loaded over an insecure connection.{" "}
+    <Callout className="mb-6" title={t("auth.secureCookies.title")} variant="error">
+      {t("auth.secureCookies.body")}{" "}
       <Link external styled to="https://headplane.net/troubleshooting#signing-in-does-nothing">
-        Docs
+        {t("nav.docs")}
       </Link>
     </Callout>
   ) : undefined;
 
   return (
-    <Shell title="Sign in to Headplane">
+    <Shell title={t("auth.signIn")}>
       {notice}
       {isOidcConnectorEnabled && (
         <>
@@ -145,11 +147,11 @@ export default function Page({ loaderData, actionData }: Route.ComponentProps) {
             render={<RouterLink prefetch="none" reloadDocument to="/oidc/start" />}
             variant="primary"
           >
-            Continue with SSO
+            {t("auth.signInOidc")}
           </Button>
           <div className="text-muted my-6 flex items-center gap-3 text-xs">
             <span className="bg-line h-px flex-1" />
-            or
+            {t("auth.or")}
             <span className="bg-line h-px flex-1" />
           </div>
         </>
@@ -159,12 +161,12 @@ export default function Page({ loaderData, actionData }: Route.ComponentProps) {
           autoComplete="current-password"
           errorMessage={actionData?.success === false ? actionData.message : undefined}
           invalid={actionData?.success === false}
-          label="API key"
+          label={t("auth.apiKey")}
           labelTooltip={
             <>
-              Create one by running{" "}
-              <Code className="whitespace-nowrap">headscale apikeys create</Code> on your Headscale
-              server.
+              {t("auth.apiKeyHelp.before")}
+              <Code className="whitespace-nowrap">headscale apikeys create</Code>
+              {t("auth.apiKeyHelp.after")}
             </>
           }
           name="api_key"
@@ -178,7 +180,7 @@ export default function Page({ loaderData, actionData }: Route.ComponentProps) {
           type="submit"
           variant={isOidcConnectorEnabled ? "secondary" : "primary"}
         >
-          Sign in with API key
+          {t("auth.signInApiKey")}
         </Button>
       </Form>
     </Shell>

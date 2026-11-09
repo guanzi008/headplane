@@ -20,6 +20,7 @@ import { usersResource } from "~/server/headscale/live-store";
 import { isUserPrincipal } from "~/server/web/auth";
 import { autoLink } from "~/server/web/link";
 import { Capabilities } from "~/server/web/roles";
+import { useI18n } from "~/utils/i18n";
 
 import type { Route } from "./+types/home";
 import Shell, { SignedIn } from "./auth/login/shell";
@@ -96,16 +97,13 @@ const downloads = [
 ];
 
 export default function Home({ loaderData }: Route.ComponentProps) {
+  const { t } = useI18n();
   const { email, server } = loaderData;
 
   return (
-    <Shell
-      description="You don't have access to the dashboard, but your devices can still join the network."
-      isWide
-      title="Connect your devices"
-    >
+    <Shell description={t("home.description")} isWide title={t("home.title")}>
       <ol className="flex flex-col gap-6">
-        <Step number={1} title="Install Tailscale">
+        <Step number={1} title={t("home.install.title")}>
           <div className="flex flex-wrap gap-2">
             {downloads.map((d) => (
               <Button
@@ -120,24 +118,21 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             ))}
           </div>
           <p className="text-muted mt-4 mb-2 text-sm">
-            On Linux, use the install script (
+            {t("home.install.linux")}
             <Link
               external
               styled
               to="https://github.com/tailscale/tailscale/blob/main/scripts/installer.sh"
             >
-              source
+              {t("home.install.source")}
             </Link>
-            ):
+            {t("home.install.after")}
           </p>
           <CodeBlock>curl -fsSL https://tailscale.com/install.sh | sh</CodeBlock>
         </Step>
-        <Step number={2} title="Sign in to this network">
+        <Step number={2} title={t("home.signIn.title")}>
           <CodeBlock>{`tailscale up --login-server=${server}`}</CodeBlock>
-          <p className="text-muted mt-2 text-sm">
-            Then open the link it prints. In the desktop and mobile apps, set a custom coordination
-            server to <span className="text-fg break-all">{server}</span> instead.
-          </p>
+          <p className="text-muted mt-2 text-sm">{t("home.signIn.instructions", { server })}</p>
         </Step>
       </ol>
       <LinkStatus {...loaderData} />
@@ -173,17 +168,12 @@ interface LinkStatusProps {
 }
 
 function LinkStatus({ hasHeadscaleSso, isLinked, linkedName }: LinkStatusProps) {
+  const { t } = useI18n();
   if (isLinked) {
     return (
       <Status icon={<Check className="text-ok size-4" />}>
-        {linkedName ? (
-          <>
-            Linked as <span className="font-medium">{linkedName}</span>
-          </>
-        ) : (
-          "Your account is linked"
-        )}
-        {hasHeadscaleSso === false && <Detail>An administrator approves each new device.</Detail>}
+        {linkedName ? <>{t("home.linkedAs", { name: linkedName })}</> : t("home.linked")}
+        {hasHeadscaleSso === false && <Detail>{t("home.approval")}</Detail>}
       </Status>
     );
   }
@@ -198,19 +188,16 @@ function LinkStatus({ hasHeadscaleSso, isLinked, linkedName }: LinkStatusProps) 
           </span>
         }
       >
-        Waiting for your first device…
-        <Detail>
-          Your account links once a device signs in with single sign-on. Not linking? Ask an
-          administrator.
-        </Detail>
+        {t("home.waiting")}
+        <Detail>{t("home.waitingDetail")}</Detail>
       </Status>
     );
   }
 
   return (
     <Status icon={<TriangleAlert className="text-warn size-4" />}>
-      Ask an administrator to link your account
-      {hasHeadscaleSso === false && <Detail>They'll also approve each new device.</Detail>}
+      {t("home.askAdmin")}
+      {hasHeadscaleSso === false && <Detail>{t("home.approvalFuture")}</Detail>}
     </Status>
   );
 }
