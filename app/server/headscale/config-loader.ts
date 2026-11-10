@@ -30,6 +30,15 @@ interface OIDCConfigView {
   allowedUsers: string[];
 }
 
+interface GeneralConfigView {
+  autoUpdateEnabled: boolean;
+  disableCheckUpdates: boolean;
+  logLevel: string;
+  nodeExpiry: string;
+  policyMode: string;
+  taildropEnabled: boolean;
+}
+
 interface ParsedDNSConfig {
   magic_dns: boolean;
   base_domain: string;
@@ -127,6 +136,56 @@ const extraRecordsConflictSchema = v.object({
   ),
 });
 
+const scalarStringSchema = v.pipe(v.union([v.string(), v.number()]), v.transform(String));
+const generalConfigSchema = v.object({
+  policy: v.optional(
+    v.fallback(
+      v.object({
+        mode: v.optional(v.fallback(v.string(), "file"), "file"),
+      }),
+      { mode: "file" },
+    ),
+    { mode: "file" },
+  ),
+  node: v.optional(
+    v.fallback(
+      v.object({
+        expiry: v.optional(v.fallback(scalarStringSchema, "0"), "0"),
+      }),
+      { expiry: "0" },
+    ),
+    { expiry: "0" },
+  ),
+  disable_check_updates: v.optional(v.fallback(goBooleanSchema, false), false),
+  log: v.optional(
+    v.fallback(
+      v.object({
+        level: v.optional(v.fallback(v.string(), "info"), "info"),
+      }),
+      { level: "info" },
+    ),
+    { level: "info" },
+  ),
+  taildrop: v.optional(
+    v.fallback(
+      v.object({
+        enabled: v.optional(v.fallback(goBooleanSchema, true), true),
+      }),
+      { enabled: true },
+    ),
+    { enabled: true },
+  ),
+  auto_update: v.optional(
+    v.fallback(
+      v.object({
+        enabled: v.optional(v.fallback(goBooleanSchema, false), false),
+      }),
+      { enabled: false },
+    ),
+    { enabled: false },
+  ),
+});
+
 interface HeadscaleConfigState {
   document?: Document;
   config: unknown;
@@ -140,6 +199,7 @@ interface HeadscaleConfig {
   readable: () => boolean;
   writable: () => boolean;
   getDNSConfig: () => DNSConfigView;
+  getGeneralConfig: () => GeneralConfigView;
   getMagicDNSBaseDomain: () => string | undefined;
   getOIDCConfig: () => OIDCConfigView | undefined;
   hasOIDCConfig: () => boolean;
@@ -170,6 +230,7 @@ function createHeadscaleConfig(
     readable: () => readable(state),
     writable: () => writable(state),
     getDNSConfig: () => getDNSConfig(state),
+    getGeneralConfig: () => getGeneralConfig(state),
     getMagicDNSBaseDomain: () => getMagicDNSBaseDomain(state),
     getOIDCConfig: () => getOIDCConfig(state),
     hasOIDCConfig: () => hasOIDCConfig(state),
@@ -208,6 +269,19 @@ function getMagicDNSBaseDomain(config: HeadscaleConfigState) {
   if (!readable(config)) return;
   const dns = getDNSConfig(config);
   return dns.magicDns && dns.baseDomain ? dns.baseDomain : undefined;
+}
+
+function getGeneralConfig(config: HeadscaleConfigState): GeneralConfigView {
+  const parsed = v.parse(generalConfigSchema, config.config);
+
+  return {
+    autoUpdateEnabled: parsed.auto_update.enabled,
+    disableCheckUpdates: parsed.disable_check_updates,
+    logLevel: parsed.log.level,
+    nodeExpiry: parsed.node.expiry,
+    policyMode: parsed.policy.mode,
+    taildropEnabled: parsed.taildrop.enabled,
+  };
 }
 
 function getOIDCConfig(config: HeadscaleConfigState): OIDCConfigView | undefined {

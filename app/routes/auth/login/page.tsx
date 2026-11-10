@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { Form, Link as RouterLink, redirect, useNavigation, useSearchParams } from "react-router";
+import {
+  data,
+  Form,
+  Link as RouterLink,
+  redirect,
+  useNavigation,
+  useSearchParams,
+} from "react-router";
 
 import Button from "~/components/button";
 import Callout from "~/components/callout";
@@ -23,14 +30,28 @@ export async function loader({ request, context, url }: Route.LoaderArgs) {
   const auth = context.get(authContext);
   const config = context.get(appConfigContext);
   const oidc = context.get(oidcContext);
+  const qp = url.searchParams;
+  const urlState = qp.get("s") ?? undefined;
+
+  // The provider returns here after ending its session. Clear the local
+  // session before checking whether the cookie still authenticates so this
+  // link works even when the provider redirects before the POST has finished.
+  if (urlState === "logout") {
+    return data(
+      {
+        isCookieSecureEnabled: config.server.cookie_secure,
+        isOidcConnectorEnabled: false,
+        oidcErrorCodes: [] as OidcError["code"][],
+        urlState,
+      },
+      { headers: { "Set-Cookie": await auth.destroySession(request) } },
+    );
+  }
 
   try {
     await auth.require(request);
     return redirect("/machines");
   } catch {}
-
-  const qp = url.searchParams;
-  const urlState = qp.get("s") ?? undefined;
 
   const oidcService = oidc.state === "enabled" ? oidc.value : undefined;
   let oidcStatus: ReturnType<OidcService["status"]> | undefined;

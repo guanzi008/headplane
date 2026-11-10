@@ -13,6 +13,11 @@ export interface NodeOptions {
   ssh?: boolean;
   routes?: string[];
   exitNode?: boolean;
+  // Uses a kernel TUN and grants the container enough privileges to create
+  // it. Needed when a test inspects the OS route table instead of only
+  // exercising tailscaled's userspace networking stack.
+  kernelTun?: boolean;
+  acceptDns?: boolean;
   tailscaleVersion?: string;
 }
 
@@ -33,7 +38,7 @@ function upArgs(target: Target, options: NodeOptions, authKey?: string) {
   const args = [
     `--login-server=${target.controlUrl}`,
     `--hostname=${options.name}`,
-    "--accept-dns=false",
+    `--accept-dns=${options.acceptDns === true}`,
   ];
 
   if (authKey) args.push(`--auth-key=${authKey}`);
@@ -52,21 +57,27 @@ async function startDaemon(target: Target, options: NodeOptions) {
     ? `tailscale/tailscale:v${options.tailscaleVersion}`
     : TAILSCALE_IMAGE;
 
-  const container = await new tc.GenericContainer(image)
+  let builder = new tc.GenericContainer(image)
     .withNetwork(target.network)
     .withName(`hp-harness-${target.id}-${options.name}`)
     .withHostname(options.name)
     .withLabels({ [`${HARNESS_LABEL}.node`]: target.id })
     .withEntrypoint(["tailscaled"])
     .withCommand([
-      "--tun=userspace-networking",
+      options.kernelTun ? "--tun=tailscale0" : "--tun=userspace-networking",
       "--statedir=/var/lib/tailscale",
       `--socket=${SOCKET}`,
     ])
     .withEnvironment({ SSL_CERT_FILE: "/etc/ssl/harness.pem" })
     .withCopyContentToContainer([{ content: target.caCert, target: "/etc/ssl/harness.pem" }])
-    .withStartupTimeout(30_000)
-    .start();
+    .withStartupTimeout(30_000);
+
+  if (options.kernelTun) {
+    // The container runtime gives the image /dev/net/tun and CAP_NET_ADMIN.
+    builder = builder.withPrivilegedMode();
+  }
+
+  const container = await builder.start();
 
   async function exec(args: string[]) {
     const result = await container.exec(args);

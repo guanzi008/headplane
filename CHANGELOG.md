@@ -7,6 +7,7 @@
 - Enabling more than one integration now turns them all off, with an error in the log. Keep one.
 - After signing in with single sign-on, only owners, admins and IT admins can pick which Headscale user their account links to. Everyone else links automatically or is linked from the **Users** page.
 - Builds no longer read `__INTERNAL_PREFIX`. If a build used it to serve Headplane somewhere other than `/admin`, set `server.base_path` to that path instead.
+- Per-user address pools require Headscale's `policy.mode` to be `database`, and existing node addresses must be included in the new pool because Headscale does not migrate node addresses automatically.
 
 ## Changes
 
@@ -35,10 +36,13 @@
 - When the Headscale configuration is writable but no integration is set up to restart Headscale, the DNS and sign-in restrictions pages now say that changes only take effect once Headscale restarts.
 - The **Rules** tab on the Access Control page can now edit grants and auto approvers. Grants set ports and protocols separately from the destination, can route traffic through tagged subnet routers or exit nodes with `via`, and keep app capabilities as written. Grants need Headscale 0.29 or newer. Auto approvers cover both subnet routes and exit nodes.
 - The Access Control file editor now formats HuJSON, preserves comments while formatting, and shows syntax errors before an invalid policy can be saved.
+- Owners and admins can change safe Headscale runtime settings from **Settings → Server settings**, including default node expiry, log level, Taildrop, client auto-update, and update checks. `policy.mode` stays read-only so switching storage cannot hide the current ACL.
+- The new **Network** page manages per-user address pools. Regular users can manage their own linked user's pool, while policy writers can manage every user. Pools are checked against other user ranges, existing node addresses, and Tailscale's reserved Quad100 and MagicDNS ranges. The page can also check pasted local routes, VPN routes, and firewall rules before saving; `10/8` and other private ranges are supported with exact `/32` client host routes.
 
 ## Fixes
 
 - Saving from the Rules or Tags & Groups tabs no longer drops the comma from text like `,}` or `,]` inside a policy value.
+- Signing out now invalidates the Headplane session and returns to the signed-out page instead of leaving the old session active. This also covers OIDC RP-initiated logout through `end_session_endpoint`.
 - Live updates work again right after signing in. Previously the machines list and other pages only refreshed on their own after a full page reload.
 - Changes to DNS settings and sign-in restrictions now actually apply with the `proc` and `kubernetes` integrations. Both sent `SIGHUP`, which only makes Headscale reload its ACL policy. They now stop Headscale with `SIGTERM` and wait for systemd or Kubernetes to restart it, so Headscale needs a supervisor that restarts it.
 - If Headscale doesn't come back after a change, Headplane now shows an error instead of reporting success.

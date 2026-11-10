@@ -32,10 +32,12 @@ export default [
     route("/users", "routes/users/overview.tsx"),
     route("/acls", "routes/acls/overview.tsx"),
     route("/dns", "routes/dns/overview.tsx"),
+    route("/network", "routes/network/overview.tsx"),
 
     ...prefix("/settings", [
       index("routes/settings/overview.tsx"),
       layout("routes/settings/layout.tsx", [
+        route("/general", "routes/settings/general/overview.tsx"),
         route("/auth-keys", "routes/settings/auth-keys/overview.tsx"),
         route("/restrictions", "routes/settings/restrictions/overview.tsx"),
         route("/agent", "routes/settings/agent.tsx"),

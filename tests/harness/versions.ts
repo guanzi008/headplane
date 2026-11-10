@@ -6,6 +6,14 @@ export type HeadscaleVersion = (typeof HEADSCALE_VERSIONS)[number];
 export const LATEST_HEADSCALE = HEADSCALE_VERSIONS[HEADSCALE_VERSIONS.length - 1];
 
 export function headscaleImage(version: HeadscaleVersion) {
+  // Local development can point the harness at a fork image without changing
+  // the supported-version matrix. CI leaves this unset and uses the published
+  // image for the requested version.
+  const override = process.env.HP_HEADSCALE_IMAGE?.trim();
+  if (override) {
+    return override;
+  }
+
   const tag = version === "0.30.0" ? "development" : version;
   return `headscale/headscale:${tag}`;
 }

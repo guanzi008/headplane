@@ -100,6 +100,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       access: {
         dns: auth.can(principal, Capabilities.read_network),
         machines: auth.can(principal, Capabilities.read_machines),
+        network: auth.can(principal, Capabilities.manage_own_ippool),
         policy: auth.can(principal, Capabilities.read_policy),
         settings: auth.can(principal, Capabilities.read_feature),
         ui: auth.can(principal, Capabilities.ui_access),

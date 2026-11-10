@@ -28,6 +28,7 @@ export interface HeaderProps {
     ui: boolean;
     machines: boolean;
     dns: boolean;
+    network: boolean;
     users: boolean;
     policy: boolean;
     settings: boolean;
@@ -40,6 +41,7 @@ const tabs = [
   { to: "/users", label: "nav.users", key: "users" },
   { to: "/acls", label: "nav.acls", key: "policy" },
   { to: "/dns", label: "nav.dns", key: "dns" },
+  { to: "/network", label: "nav.network", key: "network" },
   { to: "/settings", label: "nav.settings", key: "settings" },
 ] as const;
 
@@ -57,7 +59,7 @@ export default function Header({ user, access, configAvailable }: HeaderProps) {
   const { t } = useI18n();
   const submit = useSubmit();
   const navigate = useNavigate();
-  const showTabs = access.ui;
+  const showTabs = access.ui || access.network;
   const rootRoute = useRoute("root");
   const currentColorScheme: ColorScheme = rootRoute?.loaderData?.colorScheme ?? "system";
   // useLocation returns the path with the basename already stripped, which is

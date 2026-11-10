@@ -17,6 +17,8 @@ export const Capabilities = {
   use_tags: 1 << 13,
   write_tailnet: 1 << 14,
   owner: 1 << 15,
+  manage_own_ippool: 1 << 17,
+  configure_server: 1 << 18,
 } as const;
 
 export const Roles = {
@@ -36,6 +38,8 @@ export const Roles = {
     Capabilities.generate_authkeys |
     Capabilities.use_tags |
     Capabilities.write_tailnet |
+    Capabilities.manage_own_ippool |
+    Capabilities.configure_server |
     Capabilities.owner,
 
   admin:
@@ -53,7 +57,9 @@ export const Roles = {
     Capabilities.write_users |
     Capabilities.generate_authkeys |
     Capabilities.use_tags |
-    Capabilities.write_tailnet,
+    Capabilities.write_tailnet |
+    Capabilities.manage_own_ippool |
+    Capabilities.configure_server,
 
   network_admin:
     Capabilities.ui_access |
@@ -66,7 +72,8 @@ export const Roles = {
     Capabilities.read_users |
     Capabilities.generate_authkeys |
     Capabilities.use_tags |
-    Capabilities.write_tailnet,
+    Capabilities.write_tailnet |
+    Capabilities.manage_own_ippool,
 
   it_admin:
     Capabilities.ui_access |
@@ -79,7 +86,8 @@ export const Roles = {
     Capabilities.write_machines |
     Capabilities.read_users |
     Capabilities.write_users |
-    Capabilities.generate_authkeys,
+    Capabilities.generate_authkeys |
+    Capabilities.manage_own_ippool,
 
   auditor:
     Capabilities.ui_access |
@@ -97,7 +105,7 @@ export const Roles = {
     Capabilities.generate_own_authkeys,
 
   // No access — user exists but has not been granted any role
-  member: 0,
+  member: Capabilities.manage_own_ippool,
 } as const;
 
 export type Role = keyof typeof Roles;

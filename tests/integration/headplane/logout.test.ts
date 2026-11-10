@@ -14,8 +14,30 @@ test("signing out ends the session for good", async () => {
   const result = (await app.call(logout, "/logout", { as: cookie, form: {} })) as Response;
   expect(result.headers.get("Location")).toBe("/login");
   expect(result.headers.get("Set-Cookie")).toMatch(/Expires=Thu, 01 Jan 1970/);
+  expect(result.headers.get("Set-Cookie")).toMatch(/Max-Age=0/);
 
   // A copy of the old cookie doesn't sign anyone back in.
+  await expect(app.ctx.auth.require(app.request("/", { as: cookie }))).rejects.toThrow();
+});
+
+test("a direct logout link ends an existing session", async () => {
+  await using app = await createTestApp({ headscale: HEADSCALE });
+  const { cookie } = await app.signInWithApiKey();
+
+  const result = (await app.call(login, "/login", {
+    as: cookie,
+    search: "?s=logout",
+  })) as {
+    data: { urlState: string };
+    init?: { headers?: HeadersInit };
+    type: string;
+  };
+
+  expect(result.type).toBe("DataWithResponseInit");
+  expect(result.data.urlState).toBe("logout");
+  expect(new Headers(result.init?.headers).get("Set-Cookie")).toMatch(/Expires=Thu, 01 Jan 1970/);
+  expect(new Headers(result.init?.headers).get("Set-Cookie")).toMatch(/Max-Age=0/);
+
   await expect(app.ctx.auth.require(app.request("/", { as: cookie }))).rejects.toThrow();
 });
 
@@ -43,6 +65,6 @@ test("signing out doesn't bounce straight back in when only SSO is offered", asy
   expect(result.headers.get("Location")).toBe("/login?s=logout");
 
   const after = await app.call(login, "/login", { search: "?s=logout" });
-  expect(after).toMatchObject({ urlState: "logout" });
+  expect(after).toMatchObject({ data: { urlState: "logout" } });
   expect(statusOf(await app.call(login, "/login"))).toBe(302);
 });

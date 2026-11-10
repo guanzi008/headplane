@@ -1,6 +1,6 @@
 import { Check, TriangleAlert } from "lucide-react";
 import type React from "react";
-import { redirect } from "react-router";
+import { Link as RouterLink, redirect } from "react-router";
 
 import androidSvg from "~/assets/android.svg";
 import iosSvg from "~/assets/ios.svg";
@@ -67,6 +67,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return {
     email: principal.profile.email ?? principal.profile.name,
     hasHeadscaleSso: headscaleConfig.readable() ? headscaleConfig.hasOIDCConfig() : undefined,
+    canManageNetwork: auth.can(principal, Capabilities.manage_own_ippool),
     isLinked,
     linkedName,
     server: config.headscale.public_url ?? config.headscale.url,
@@ -136,6 +137,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </Step>
       </ol>
       <LinkStatus {...loaderData} />
+      {loaderData.canManageNetwork && (
+        <div className="mt-4">
+          <Button nativeButton={false} render={<RouterLink to="/network" />} variant="primary">
+            {t("home.network")}
+          </Button>
+        </div>
+      )}
       <SignedIn name={email} />
     </Shell>
   );

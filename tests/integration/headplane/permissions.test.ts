@@ -32,9 +32,13 @@ const PUBLIC = new Set([
 // Members get only access flags or change notifications from these.
 const MEMBER_VISIBLE = new Set([
   "layout/app.tsx",
+  "routes/network/overview.tsx",
   "routes/settings/layout.tsx",
   "routes/util/live.ts",
 ]);
+
+// These routes let members manage their own Headscale identity.
+const MEMBER_ALLOWED = new Set(["routes/network/overview.tsx"]);
 
 // Read-only roles manage their own auth keys and may refresh the agent.
 const SELF_SERVICE = new Set([
@@ -78,19 +82,26 @@ describe("route permissions", () => {
   let app: TestApp;
   let form: Record<string, string>;
   const cookies = new Map<Role, string>();
+  const sessions = new Map<Role, { cookie: string; userId: string }>();
 
   beforeAll(async () => {
     tailnet = await createTailnet();
     app = await tailnet.headplane();
 
     for (const role of ["owner", "member", "viewer", "auditor"] as const) {
-      cookies.set(role, (await app.signIn(role)).cookie);
+      const session = await app.signIn(role);
+      cookies.set(role, session.cookie);
+      sessions.set(role, session);
     }
 
     // Valid enough for every intent, so checks inside handlers run too. The
     // machine belongs to a Headscale user none of the test users are.
     const other = await tailnet.user("someone-else@");
     const node = await tailnet.node({ name: "theirs", user: other.name, routes: ["10.0.0.0/24"] });
+    const memberUser = await tailnet.user("pool-member", {
+      email: "pool-member@example.com",
+    });
+    await app.ctx.auth.linkHeadscaleUser(sessions.get("member")!.userId, memberUser.id);
     form = {
       node_id: node.id,
       user_id: other.id,
@@ -109,9 +120,16 @@ describe("route permissions", () => {
   });
 
   function callAction(entry: Entry, as?: string) {
+    const userScopedForm = Object.fromEntries(
+      Object.entries(form).filter(([key]) => !MEMBER_ALLOWED.has(entry.file) || key !== "user_id"),
+    );
+
     return app.call(entry.module.action!, entry.path, {
       as,
-      form: { ...form, ...(entry.intent ? { intent: entry.intent } : {}) },
+      form: {
+        ...userScopedForm,
+        ...(entry.intent ? { intent: entry.intent } : {}),
+      },
       params: { id: form.node_id },
     });
   }
@@ -139,9 +157,11 @@ describe("route permissions", () => {
   test.for(actions.map((entry) => [label(entry), entry] as const))(
     "%s is refused to signed-out users and read-only roles",
     async ([, entry]) => {
-      const readOnly: Role[] = SELF_SERVICE.has(entry.file)
-        ? ["member"]
-        : ["member", "viewer", "auditor"];
+      const readOnly: Role[] = MEMBER_ALLOWED.has(entry.file)
+        ? ["viewer", "auditor"]
+        : SELF_SERVICE.has(entry.file)
+          ? ["member"]
+          : ["member", "viewer", "auditor"];
 
       expect(statusOf(await callAction(entry)), "signed out").not.toBe(200);
       for (const role of readOnly) {
@@ -156,4 +176,50 @@ describe("route permissions", () => {
       expect(statusOf(await callAction(entry, cookies.get("owner")))).not.toBe(403);
     },
   );
+
+  describe("address pool permissions", () => {
+    const network = actions.find(
+      (entry) => entry.file === "routes/network/overview.tsx" && entry.intent === "save",
+    );
+
+    function savePool(as: Role, pools: string, userId?: string) {
+      if (!network) throw new Error("network save action not found");
+      return app.call(network.module.action!, network.path, {
+        as: cookies.get(as),
+        form: {
+          intent: "save",
+          pools,
+          ...(userId ? { user_id: userId } : {}),
+        },
+      });
+    }
+
+    test("a member can save their own address pool", async () => {
+      expect(statusOf(await savePool("member", "10.42.5.0/24"))).toBe(200);
+    });
+
+    test("a member cannot target another user's address pool", async () => {
+      expect(statusOf(await savePool("member", "10.42.6.0/24", form.user_id))).toBe(403);
+    });
+
+    test("an owner can save an arbitrary user's address pool", async () => {
+      const target = await tailnet.user("owner-pool-target", {
+        email: "owner-pool-target@example.com",
+      });
+      expect(statusOf(await savePool("owner", "10.77.0.0/24", target.id))).toBe(200);
+    });
+
+    test("a pool containing another user's node address is rejected", async () => {
+      // Earlier route checks exercise the delete action on the shared node,
+      // so create one that will still exist when this check runs.
+      const owner = await tailnet.user("pool-node-owner", {
+        email: "pool-node-owner@example.com",
+      });
+      const node = await tailnet.node({ name: "pool-conflict", user: owner.name });
+      const machine = await node.machine();
+      expect(machine.ipAddresses.some((address) => address.startsWith("100.64."))).toBe(true);
+
+      expect(statusOf(await savePool("member", "100.64.0.0/24"))).toBe(400);
+    });
+  });
 });

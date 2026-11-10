@@ -1,0 +1,53 @@
+---
+title: Server settings
+description: Change safe Headscale runtime settings from Headplane.
+---
+
+# Server settings
+
+**Settings → Server settings** edits a small set of Headscale configuration
+values without exposing secrets or listeners. Only owners and admins have
+access.
+
+Headplane needs to read and write Headscale's configuration file. Set
+`headscale.config_path` to that file:
+
+```yaml
+# Headplane config.yaml
+headscale:
+  config_path: "/etc/headscale/config.yaml"
+```
+
+The page is read-only when the file is not writable. See
+[Integrations](/configuration/integrations) for the supported ways to reach
+the file and restart Headscale.
+
+## Settings
+
+| Setting                    | Headscale key           | Notes                                                                                                          |
+| -------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Default node expiry        | `node.expiry`           | Uses Headscale duration syntax such as `24h`, `30d`, or `0` for no expiry. Tagged devices never expire.        |
+| Log level                  | `log.level`             | `trace`, `debug`, `info`, `warn`, `error`, `fatal`, or `panic`. Use verbose levels only while troubleshooting. |
+| Taildrop                   | `taildrop.enabled`      | Turns tailnet-wide Taildrop file transfer on or off.                                                           |
+| Client auto-update default | `auto_update.enabled`   | Sets the default for clients that have not chosen a local policy.                                              |
+| Disable update checks      | `disable_check_updates` | Stops Headscale from checking for new releases at startup.                                                     |
+
+The values are validated before they are written. Comments and unrelated keys
+in the YAML configuration are preserved.
+
+## Applying changes
+
+When a supported integration is configured, Headplane restarts Headscale and
+waits for its health endpoint. Without an integration, the change is written to
+the configuration file and takes effect the next time Headscale restarts.
+
+Restarting Headscale briefly interrupts control connections. Run it under a
+supervisor such as systemd with `Restart=always`, or keep a single supported
+Headplane integration enabled.
+
+## Policy storage is read-only
+
+`policy.mode` is displayed but cannot be changed here. Switching between `file`
+and `database` storage can make existing ACLs appear to disappear because the
+new storage location starts empty. Change it deliberately in the Headscale
+configuration file, after backing up the policy.

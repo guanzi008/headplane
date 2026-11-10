@@ -1,0 +1,138 @@
+---
+title: Network address pools
+description: Give each Headscale user their own private IPv4 or IPv6 address pool.
+---
+
+# Network address pools
+
+The **Network** page assigns private address ranges to individual Headscale
+users. Devices owned by that user receive new addresses from the pool instead
+of Headscale's global range. This is useful when several tailnets, VPNs, or
+physical networks share the same CGNAT space.
+
+Address pools are stored as `nodeAttrs.ipPool` entries in the Headscale policy.
+The page therefore needs Headscale to run with database policy storage:
+
+```yaml
+policy:
+  mode: database
+```
+
+In file mode the page is read-only, and the policy remains managed in the
+Headscale policy file.
+
+## Permissions
+
+- A signed-in user with a linked Headscale user can edit that user's pool.
+  This includes people whose Headplane role is **Member**.
+- Owners, admins, and network admins with policy write access can edit every
+  Headscale user's pool.
+- An unlinked account cannot choose a Headscale user. Link the account on the
+  **Users** page first.
+
+Every save is checked again on the server. The browser cannot grant a user a
+pool belonging to someone else by submitting a modified form.
+
+## Pool rules
+
+Enter one or more CIDR ranges, separated by newlines, spaces, or commas. Leave
+the field empty to remove the pool and return that user to global allocation.
+
+- IPv4 pools must be inside `10.0.0.0/8`, `172.16.0.0/12`,
+  `192.168.0.0/16`, or `100.64.0.0/10`, and be at least a `/30`.
+- IPv6 pools must be ULA ranges inside `fc00::/7`, and be at least a `/126`.
+- Pools for different users cannot overlap.
+- A pool cannot contain another user's existing node address.
+- A user's own existing addresses must remain inside the pool for each address
+  family the pool defines. Headscale does not migrate existing node addresses;
+  include the current addresses, or remove the devices before changing the
+  pool.
+- `100.100.100.0/24` (MagicDNS and TSMP) and `100.115.92.0/23` (Quad100 and
+  the IPN service range) are reserved. They cannot be assigned to a user.
+
+If a pool defines only IPv4, IPv6 addresses continue to come from Headscale's
+global IPv6 allocation, and the reverse is also true. Tagged devices are not
+owned by a user and keep using global allocation.
+
+The policy permits `10.x`, `172.16/12`, `192.168/16`, and IPv6 ULA addresses.
+These ranges work only when they do not collide with a route the client already
+uses. A remote node address does not override a local subnet route on a client
+just because it looks private.
+
+## Client routing
+
+When any custom IPv4 pool exists, Headscale tells clients to disable the
+special CGNAT route and sends exact `/32` host routes for node addresses. A
+device using `10.42.0.1` is then reached through its specific host route rather
+than through a broad `100.64.0.0/10` CGNAT route. Quad100 and MagicDNS keep
+their dedicated handling.
+
+Headscale also adds the reverse-DNS zones needed for MagicDNS lookups when a
+pool is outside the built-in CGNAT and Tailscale ULA ranges. This lets a node
+such as `10.42.0.1` resolve its own MagicDNS reverse name.
+
+Exact host routes do not resolve a conflict with a local LAN. If a client
+already has a connected `10.42.0.0/24` interface, a tailnet node in the same
+range is ambiguous from that client's point of view. Choose a different pool
+or remove the conflicting local route.
+
+## Checking for conflicts
+
+The browser cannot read a device's routing table or firewall. The **Check the
+client network** box accepts pasted output so the page can compare it with the
+proposed pool:
+
+```sh
+# Linux
+ip route
+ip -6 route
+
+# macOS
+netstat -rn
+
+# Windows
+route print
+
+# Tailscale routes on any platform
+tailscale status
+tailscale debug prefs
+```
+
+VPN clients, WireGuard configurations, Docker networks, and other route output
+can be pasted too. A route that overlaps a proposed pool blocks saving in the
+browser until the range is changed. Firewall rules are treated as warnings,
+not blocks:
+
+```sh
+sudo iptables-save
+sudo ip6tables-save
+sudo nft list ruleset
+sudo ufw status verbose
+sudo firewall-cmd --list-all
+```
+
+These checks are a local planning aid: they run in the browser and the pasted
+text never leaves the page. The server enforces pool overlap, node-address
+conflicts, reserved ranges, and policy validity. It cannot inspect every
+client's private routing table, so a successful save is not proof that a range
+is unused on every device.
+
+## Choosing a range
+
+1. Add a pool for each user, using a range that does not overlap any other
+   pool, existing node address, physical LAN, VPN, container network, or
+   firewall rule.
+2. Paste each client type's route output into the conflict checker before
+   rolling the pool out.
+3. Save the pool, then register a new device or reconnect an existing device
+   to verify its address, exact host route, and MagicDNS name.
+4. On Linux, confirm the host route is installed even when the policy-routing
+   table is not the main table:
+
+   ```sh
+   ip -4 route show table all
+   ip -6 route show table all
+   ```
+
+If an existing device cannot keep its current address in the new pool, move or
+remove the device first. Headscale does not rewrite addresses in place.

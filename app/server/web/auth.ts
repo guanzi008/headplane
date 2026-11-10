@@ -586,7 +586,7 @@ export function createAuthService(opts: AuthServiceOptions): AuthService {
 
     const cookie = createCookie(opts.cookie.name, opts.cookie);
 
-    return cookie.serialize("", { expires: new Date(0) });
+    return cookie.serialize("", { expires: new Date(0), maxAge: 0 });
   }
 
   async function findOrCreateUser(

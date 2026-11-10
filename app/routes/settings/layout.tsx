@@ -2,16 +2,19 @@ import { NavLink, Outlet } from "react-router";
 
 import PageHeader from "~/components/page-header";
 import { authContext, headscaleConfigContext } from "~/server/context";
+import { Capabilities } from "~/server/web/roles";
 import cn from "~/utils/cn";
 import { useI18n, type MessageKey } from "~/utils/i18n";
 
 import type { Route } from "./+types/layout";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  await context.get(authContext).require(request);
+  const auth = context.get(authContext);
+  const principal = await auth.require(request);
   const headscaleConfig = context.get(headscaleConfigContext);
 
   return {
+    canConfigureServer: auth.can(principal, Capabilities.configure_server),
     hasRestrictions: headscaleConfig.writable() && headscaleConfig.hasOIDCConfig(),
   };
 }
@@ -19,6 +22,9 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 export default function Layout({ loaderData }: Route.ComponentProps) {
   const { t } = useI18n();
   const items: { to: string; label: MessageKey }[] = [
+    ...(loaderData.canConfigureServer
+      ? [{ to: "/settings/general", label: "settings.general" as const }]
+      : []),
     { to: "/settings/auth-keys", label: "settings.authKeys" },
     ...(loaderData.hasRestrictions
       ? [{ to: "/settings/restrictions", label: "settings.restrictions" as const }]
