@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: guanzi008/headscale
-          ref: 4e16f935deb6d0faa0f49f56757d2b8a8e7ec621
+          ref: a9e923ffd83ab1dc94fdce2eb1dafae22459b3cb
           path: headscale-source
           persist-credentials: false
 

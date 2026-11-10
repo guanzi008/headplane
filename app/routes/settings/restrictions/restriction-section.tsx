@@ -1,5 +1,6 @@
 import ActionDialog from "~/components/action-dialog";
 import Section, { RemoveButton, Row, RowList } from "~/components/section";
+import { useI18n } from "~/utils/i18n";
 
 import AddRestriction from "./dialogs/add-restriction";
 import type { RestrictionType } from "./schemas";
@@ -29,28 +30,32 @@ interface Props {
 }
 
 export default function RestrictionSection({ type, values, isDisabled }: Props) {
+  const { text: ui } = useI18n();
+
   const { title, description, empty } = copy[type];
 
   return (
     <Section
       action={isDisabled ? undefined : <AddRestriction type={type} />}
-      description={description}
-      title={title}
+      description={ui(description)}
+      title={ui(title)}
     >
       {values.length === 0 ? (
-        <p className="text-muted py-2.5 text-sm">{empty}</p>
+        <p className="text-muted py-2.5 text-sm">{ui(empty)}</p>
       ) : (
         <RowList>
           {values.map((value) => (
             <Row
               action={
                 <ActionDialog
-                  description={`Only the remaining ${type}s can sign in. If none are left, every ${type} can.`}
+                  description={ui(
+                    `Only the remaining ${type}s can sign in. If none are left, every ${type} can.`,
+                  )}
                   fields={{ type, value }}
                   intent="remove"
                   isDestructive
-                  submitLabel="Remove"
-                  title={`Remove ${value}?`}
+                  submitLabel={ui("Remove")}
+                  title={ui("Remove {name}?", { name: value })}
                   trigger={<RemoveButton disabled={isDisabled} />}
                 />
               }

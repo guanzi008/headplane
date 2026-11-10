@@ -2,6 +2,7 @@ import { Copy } from "lucide-react";
 
 import cn from "~/utils/cn";
 import { copyToClipboard } from "~/utils/copy";
+import { useI18n } from "~/utils/i18n";
 import toast from "~/utils/toast";
 
 export interface CodeBlockProps {
@@ -10,6 +11,8 @@ export interface CodeBlockProps {
 }
 
 export default function CodeBlock({ children, className }: CodeBlockProps) {
+  const { text: ui } = useI18n();
+
   const text = children.trim();
 
   return (
@@ -28,7 +31,7 @@ export default function CodeBlock({ children, className }: CodeBlockProps) {
       <code className="block px-3 pt-2 pb-1 text-sm break-all">{text}</code>
       <span className="text-muted mt-0.5 flex items-center gap-1 px-3 pb-2 text-xs">
         <Copy className="size-3" />
-        Click to copy
+        {ui("Click to copy")}
       </span>
     </button>
   );

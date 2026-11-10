@@ -12,6 +12,7 @@ import Select from "~/components/select";
 import { SwitchField } from "~/components/switch";
 import TokenList from "~/components/token-list";
 import type { User } from "~/types";
+import { useI18n } from "~/utils/i18n";
 import { getUserDisplayName, sortUsersByDisplayName } from "~/utils/user";
 
 interface AddAuthKeyProps {
@@ -53,30 +54,32 @@ export default function AddAuthKey({
   currentHeadscaleUserId,
   currentSubject,
 }: AddAuthKeyProps) {
+  const { text: ui } = useI18n();
+
   const currentUser = selfServiceOnly
     ? findCurrentUser(users, currentHeadscaleUserId, currentSubject)
     : undefined;
 
   return (
     <ActionDialog
-      description="Devices sign in with the key instead of an interactive login."
+      description={ui("Devices sign in with the key instead of an interactive login.")}
       intent="create"
       isDisabled={selfServiceOnly && !currentUser}
-      submitLabel="Create key"
+      submitLabel={ui("Create key")}
       success={({ key }) => (
         <>
-          <DialogTitle>Auth key created</DialogTitle>
-          <DialogDescription>Copy the key now. It won&apos;t be shown again.</DialogDescription>
+          <DialogTitle>{ui("Auth key created")}</DialogTitle>
+          <DialogDescription>{ui("Copy the key now. It won't be shown again.")}</DialogDescription>
           <CodeBlock>{key}</CodeBlock>
-          <p className="text-muted">Register a device with it:</p>
+          <p className="text-muted">{ui("Register a device with it:")}</p>
           <CodeBlock>{`tailscale up --login-server=${url} --authkey ${key}`}</CodeBlock>
         </>
       )}
-      title="Create auth key"
+      title={ui("Create auth key")}
       trigger={
         <Button variant="primary">
           <Plus className="size-3.5" />
-          Create key
+          {ui("Create key")}
         </Button>
       }
     >
@@ -93,13 +96,15 @@ interface AuthKeyFieldsProps {
 
 // Kept separate so its state resets each time the dialog opens.
 function AuthKeyFields({ users, selfServiceOnly, currentUser }: AuthKeyFieldsProps) {
+  const { text: ui } = useI18n();
+
   const [isTagOnly, setIsTagOnly] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
 
   if (selfServiceOnly && !currentUser) {
     return (
       <Callout variant="warning">
-        Your account isn&apos;t linked to a Headscale user yet, so you can&apos;t create a key.
+        {ui("Your account isn't linked to a Headscale user yet, so you can't create a key.")}
       </Callout>
     );
   }
@@ -109,8 +114,8 @@ function AuthKeyFields({ users, selfServiceOnly, currentUser }: AuthKeyFieldsPro
       {!selfServiceOnly && (
         <SwitchField
           checked={isTagOnly}
-          description="The key belongs to its tags instead of a user."
-          label="Tag-only key"
+          description={ui("The key belongs to its tags instead of a user.")}
+          label={ui("Tag-only key")}
           onCheckedChange={setIsTagOnly}
         />
       )}
@@ -119,24 +124,24 @@ function AuthKeyFields({ users, selfServiceOnly, currentUser }: AuthKeyFieldsPro
           <>
             <input name="user_id" type="hidden" value={currentUser.id} />
             <Select
-              description="You can only create keys for your own user."
+              description={ui("You can only create keys for your own user.")}
               disabled
               items={[{ value: currentUser.id, label: getUserDisplayName(currentUser) }]}
-              label="User"
+              label={ui("User")}
               value={currentUser.id}
             />
           </>
         ) : (
           <Select
             defaultValue={sortUsersByDisplayName(users)[0]?.id ?? null}
-            description="Devices that sign in with the key belong to this user."
+            description={ui("Devices that sign in with the key belong to this user.")}
             items={sortUsersByDisplayName(users).map((user) => ({
               value: user.id,
               label: getUserDisplayName(user),
             }))}
-            label="User"
+            label={ui("User")}
             name="user_id"
-            placeholder="Select a user"
+            placeholder={ui("Select a user")}
             required
           />
         ))}
@@ -145,7 +150,7 @@ function AuthKeyFields({ users, selfServiceOnly, currentUser }: AuthKeyFieldsPro
       ))}
       <TokenList
         emptyText={isTagOnly ? "Add at least one tag" : "No tags"}
-        label="Tags"
+        label={ui("Tags")}
         normalize={(value) => (value.startsWith("tag:") ? value : `tag:${value}`)}
         onChange={setTags}
         placeholder="tag:server"
@@ -154,27 +159,27 @@ function AuthKeyFields({ users, selfServiceOnly, currentUser }: AuthKeyFieldsPro
       />
       <NumberInput
         defaultValue={90}
-        label="Expires after (days)"
+        label={ui("Expires after (days)")}
         max={365_000}
         min={1}
         name="expiry"
         required
       />
       <SwitchField
-        description="The key can sign in more than one device."
-        label="Reusable"
+        description={ui("The key can sign in more than one device.")}
+        label={ui("Reusable")}
         name="reusable"
       />
       <SwitchField
         description={
           <>
-            Devices are removed once they go offline.{" "}
+            {ui("Devices are removed once they go offline.")}{" "}
             <Link external styled to="https://tailscale.com/kb/1111/ephemeral-nodes">
-              Docs
+              {ui("Docs")}
             </Link>
           </>
         }
-        label="Ephemeral"
+        label={ui("Ephemeral")}
         name="ephemeral"
       />
     </>

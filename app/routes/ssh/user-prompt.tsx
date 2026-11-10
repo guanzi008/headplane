@@ -4,6 +4,7 @@ import Button from "~/components/button";
 import Input from "~/components/input";
 import Link from "~/components/link";
 import Shell from "~/routes/auth/login/shell";
+import { useI18n } from "~/utils/i18n";
 
 import { SSH_DOCS_URL } from "./errors";
 
@@ -12,6 +13,8 @@ interface UserPromptProps {
 }
 
 export default function UserPrompt({ hostname }: UserPromptProps) {
+  const { text: ui } = useI18n();
+
   return (
     <Shell
       description="Pick the user to sign in as. Your policy's SSH rules decide which ones are allowed."
@@ -36,7 +39,7 @@ export default function UserPrompt({ hostname }: UserPromptProps) {
           window.location.assign(url.toString());
         }}
       >
-        <Input autoComplete="off" label="Username" name="user" required spellCheck={false} />
+        <Input autoComplete="off" label={ui("Username")} name="user" required spellCheck={false} />
         <Button className="w-full" type="submit" variant="primary">
           Connect
         </Button>
@@ -46,7 +49,7 @@ export default function UserPrompt({ hostname }: UserPromptProps) {
         <Link external styled to={`${SSH_DOCS_URL}#troubleshooting`}>
           troubleshooting
         </Link>
-        .
+        {ui(".")}
       </p>
     </Shell>
   );

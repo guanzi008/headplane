@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import Button from "~/components/button";
 import List from "~/components/list";
+import { useI18n } from "~/utils/i18n";
 
 // Chrome shared by the rules and the tags/groups editors.
 
@@ -15,6 +16,8 @@ interface SectionProps {
 }
 
 export function Section({ title, description, isDisabled, onAdd, children }: SectionProps) {
+  const { text: ui } = useI18n();
+
   return (
     <section>
       <div className="mb-3 flex items-end justify-between gap-4">
@@ -24,7 +27,7 @@ export function Section({ title, description, isDisabled, onAdd, children }: Sec
         </div>
         <Button className="shrink-0" disabled={isDisabled} onClick={onAdd} type="button">
           <Plus className="size-4" />
-          Add
+          {ui("Add")}
         </Button>
       </div>
       <List>{children}</List>
@@ -43,10 +46,12 @@ interface RowActionsProps {
 }
 
 export function RowActions({ isDisabled, onEdit, onDelete }: RowActionsProps) {
+  const { text: ui } = useI18n();
+
   return (
     <div className="flex shrink-0 items-center gap-1">
       <Button
-        aria-label="Edit"
+        aria-label={ui("Edit")}
         disabled={isDisabled}
         onClick={onEdit}
         size="sm"
@@ -56,7 +61,7 @@ export function RowActions({ isDisabled, onEdit, onDelete }: RowActionsProps) {
         <Pencil className="h-4 w-4" />
       </Button>
       <Button
-        aria-label="Delete"
+        aria-label={ui("Delete")}
         disabled={isDisabled}
         onClick={onDelete}
         size="sm"

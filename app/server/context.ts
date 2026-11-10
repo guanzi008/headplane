@@ -78,6 +78,9 @@ export async function createAppContext(config: HeadplaneConfig) {
 
   const integration = await loadIntegration(config.integration);
   const disposers: Array<() => Promise<void> | void> = [
+    () => {
+      if (db.$client.isOpen) db.$client.close();
+    },
     () => auth.stop(),
     () => hsLive.dispose(),
     () => headscale.dispose(),

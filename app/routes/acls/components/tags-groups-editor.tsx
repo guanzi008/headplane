@@ -5,6 +5,7 @@ import Link from "~/components/link";
 import List from "~/components/list";
 import type { Policy } from "~/utils/acl-policy";
 import { asUserReference } from "~/utils/acl-policy";
+import { useI18n } from "~/utils/i18n";
 
 import NamedListDialog, { type NamedListKind } from "../dialogs/named-list";
 import { Empty, RowActions, Section } from "./editor-section";
@@ -32,6 +33,8 @@ export default function TagsGroupsEditor({
   users,
   tagUsage,
 }: TagsGroupsEditorProps) {
+  const { text: ui } = useI18n();
+
   const [editing, setEditing] = useState<Editing>(null);
 
   const groups = Object.entries(policy.groups).sort(([a], [b]) => a.localeCompare(b));
@@ -90,13 +93,14 @@ export default function TagsGroupsEditor({
       <Section
         description={
           <>
-            Groups bundle users together so rules can refer to a team instead of individual
-            accounts. Membership is stored in the policy, not in Headscale.
+            {ui(
+              "Groups bundle users together so rules can refer to a team instead of individual accounts. Membership is stored in the policy, not in Headscale.",
+            )}
           </>
         }
         isDisabled={isDisabled}
         onAdd={() => setEditing({ kind: "group", name: null })}
-        title="Groups"
+        title={ui("Groups")}
       >
         {groups.length === 0 ? (
           <Empty text="No groups are defined yet." />
@@ -110,7 +114,7 @@ export default function TagsGroupsEditor({
                 <span className="font-mono text-sm">{name}</span>
                 <span className="flex flex-wrap items-center gap-1">
                   {members.length === 0 ? (
-                    <span className="text-xs opacity-60">No members</span>
+                    <span className="text-xs opacity-60">{ui("No members")}</span>
                   ) : (
                     members.map((member) => (
                       <Chip className="font-mono" key={member} text={member} />
@@ -131,17 +135,18 @@ export default function TagsGroupsEditor({
       <Section
         description={
           <>
-            Tags identify machines by role instead of by owner. A tag must be declared here before
-            it can be assigned to a node — see the{" "}
+            {ui(
+              "Tags identify machines by role instead of by owner. A tag must be declared here before it can be assigned to a node — see the",
+            )}{" "}
             <Link external styled to="https://tailscale.com/kb/1068/acl-tags">
-              Tailscale tag documentation
+              {ui("Tailscale tag documentation")}
             </Link>
-            .
+            {ui(".")}
           </>
         }
         isDisabled={isDisabled}
         onAdd={() => setEditing({ kind: "tag", name: null })}
-        title="Tags"
+        title={ui("Tags")}
       >
         {tags.length === 0 ? (
           <Empty text="No tags are defined yet." />
@@ -164,7 +169,7 @@ export default function TagsGroupsEditor({
                   </div>
                   <span className="flex flex-wrap items-center gap-1">
                     {owners.length === 0 ? (
-                      <span className="text-xs opacity-60">No owners</span>
+                      <span className="text-xs opacity-60">{ui("No owners")}</span>
                     ) : (
                       owners.map((owner) => <Chip className="font-mono" key={owner} text={owner} />)
                     )}

@@ -6,6 +6,7 @@ import Button from "~/components/button";
 import Input from "~/components/input";
 import Select from "~/components/select";
 import { fieldValidator } from "~/utils/form";
+import { useI18n } from "~/utils/i18n";
 
 import { recordValue } from "../schemas";
 
@@ -15,18 +16,20 @@ const validators = {
 };
 
 export default function AddRecord() {
+  const { text: ui } = useI18n();
+
   const [type, setType] = useState<keyof typeof validators>("A");
 
   return (
     <ActionDialog
-      description="Point a domain at an IP address for every device on the tailnet."
+      description={ui("Point a domain at an IP address for every device on the tailnet.")}
       intent="add_record"
-      submitLabel="Add record"
-      title="Add DNS record"
+      submitLabel={ui("Add record")}
+      title={ui("Add DNS record")}
       trigger={
         <Button>
           <Plus className="size-3.5" />
-          Add record
+          {ui("Add record")}
         </Button>
       }
     >
@@ -35,7 +38,7 @@ export default function AddRecord() {
           { value: "A", label: "A" },
           { value: "AAAA", label: "AAAA" },
         ]}
-        label="Type"
+        label={ui("Type")}
         name="type"
         onValueChange={(value) => {
           if (value === "A" || value === "AAAA") setType(value);
@@ -43,10 +46,10 @@ export default function AddRecord() {
         required
         value={type}
       />
-      <Input label="Domain" name="name" placeholder="test.example.com" required />
+      <Input label={ui("Domain")} name="name" placeholder="test.example.com" required />
       <Input
         key={type}
-        label="IP address"
+        label={ui("IP address")}
         name="value"
         placeholder={type === "AAAA" ? "2001:db8::ff00:42:8329" : "100.100.100.100"}
         required

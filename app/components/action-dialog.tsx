@@ -1,5 +1,5 @@
 import { Form } from "@base-ui/react/form";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useFetcher } from "react-router";
 
 import Button from "~/components/button";
@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "~/components/dialog";
 import type { ActionResult } from "~/utils/form";
+import { useI18n } from "~/utils/i18n";
 
 export interface ActionDialogProps {
   title: string;
@@ -46,6 +47,8 @@ export default function ActionDialog({
   children,
   success,
 }: ActionDialogProps) {
+  const { text: ui } = useI18n();
+
   const fetcher = useFetcher<ActionResult>();
   const [internalOpen, setInternalOpen] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -57,7 +60,15 @@ export default function ActionDialog({
 
   const result = hasSubmitted && !isPending ? fetcher.data : undefined;
   const isDone = result?.ok === true && !success;
-  const errors = result?.ok === false ? result.errors : undefined;
+  const errors = useMemo(
+    () =>
+      result?.ok === false
+        ? Object.fromEntries(
+            Object.entries(result.errors).map(([field, message]) => [field, ui(message)]),
+          )
+        : undefined,
+    [result, ui],
+  );
 
   function handleOpenChange(next: boolean) {
     if (!next && isPending) {
@@ -95,7 +106,7 @@ export default function ActionDialog({
         <>
           {success(result.data ?? {})}
           <DialogActions>
-            <DialogClose render={<Button>Done</Button>} />
+            <DialogClose render={<Button>{ui("Done")}</Button>} />
           </DialogActions>
         </>
       ) : (
@@ -115,7 +126,7 @@ export default function ActionDialog({
             {children}
             {errors?.form && <Callout variant="error">{errors.form}</Callout>}
             <DialogActions>
-              <DialogClose disabled={isPending} render={<Button>Cancel</Button>} />
+              <DialogClose disabled={isPending} render={<Button>{ui("Cancel")}</Button>} />
               <Button
                 disabled={isDisabled}
                 pending={isPending}

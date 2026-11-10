@@ -5,6 +5,7 @@ import Link from "~/components/link";
 import RadioGroup from "~/components/radio-group";
 import { Roles } from "~/server/web/roles";
 import type { Role } from "~/server/web/roles";
+import { useI18n } from "~/utils/i18n";
 
 interface ReassignProps {
   headplaneUserId: string;
@@ -21,15 +22,17 @@ export default function ReassignUser({
   isOpen,
   setIsOpen,
 }: ReassignProps) {
+  const { text: ui } = useI18n();
+
   const [selected, setSelected] = useState<string>(role);
 
   return (
     <ActionDialog
       description={
         <>
-          Roles decide what the user can access in Headplane.{" "}
+          {ui("Roles decide what the user can access in Headplane.")}{" "}
           <Link external styled to="https://tailscale.com/kb/1138/user-roles">
-            Docs
+            {ui("Docs")}
           </Link>
         </>
       }
@@ -38,12 +41,12 @@ export default function ReassignUser({
       isDisabled={selected === role}
       onOpenChange={setIsOpen}
       open={isOpen}
-      submitLabel="Change role"
-      title={`Change role for ${displayName}`}
+      submitLabel={ui("Change role")}
+      title={ui("Change role for {name}", { name: displayName })}
     >
       <RadioGroup
         className="gap-4"
-        label="Role"
+        label={ui("Role")}
         name="role"
         onValueChange={setSelected}
         value={selected}
@@ -51,7 +54,9 @@ export default function ReassignUser({
         {Object.keys(Roles)
           .filter((r) => r !== "owner")
           .map((r) => {
-            const { name, desc } = mapRoleToName(r);
+            const info = mapRoleToName(r);
+            const name = ui(info.name);
+            const desc = ui(info.desc);
             return (
               <RadioGroup.Radio key={r} label={name} value={r}>
                 <div>

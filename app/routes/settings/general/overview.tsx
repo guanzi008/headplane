@@ -29,6 +29,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
 
   return {
+    managedNetwork: Boolean(process.env.HSC_CONSOLE_TAILNETS_DIR),
     isAutoApplied: context.get(integrationContext) !== undefined,
     settings: config.getGeneralConfig(),
     writable: config.writable(),
@@ -85,19 +86,21 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           />
         </Section>
 
-        <Section
-          description={t("settings.general.server.description")}
-          title={t("settings.general.server.title")}
-        >
-          <ToggleSetting
-            checked={settings.disableCheckUpdates}
-            description={t("settings.general.checkUpdates.description")}
-            intent="set_disable_check_updates"
-            isDisabled={isDisabled}
-            label={t("settings.general.checkUpdates")}
-          />
-          <LogLevelSetting isDisabled={isDisabled} level={settings.logLevel} />
-        </Section>
+        {!loaderData.managedNetwork && (
+          <Section
+            description={t("settings.general.server.description")}
+            title={t("settings.general.server.title")}
+          >
+            <ToggleSetting
+              checked={settings.disableCheckUpdates}
+              description={t("settings.general.checkUpdates.description")}
+              intent="set_disable_check_updates"
+              isDisabled={isDisabled}
+              label={t("settings.general.checkUpdates")}
+            />
+            <LogLevelSetting isDisabled={isDisabled} level={settings.logLevel} />
+          </Section>
+        )}
 
         <Section
           description={t("settings.general.policy.description")}

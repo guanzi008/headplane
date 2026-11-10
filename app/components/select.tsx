@@ -3,6 +3,7 @@ import { Check, ChevronDown } from "lucide-react";
 
 import Field, { controlClass } from "~/components/field";
 import cn from "~/utils/cn";
+import { useI18n } from "~/utils/i18n";
 
 export interface SelectItem {
   value: string;
@@ -40,6 +41,8 @@ export default function Select({
   onValueChange,
   name,
 }: SelectProps) {
+  const { text: ui } = useI18n();
+
   const selectedItem =
     value !== undefined ? (items.find((i) => i.value === value) ?? null) : undefined;
   const defaultSelectedItem =
@@ -91,7 +94,7 @@ export default function Select({
               )}
             >
               <Combobox.Empty className="text-muted px-3 py-2 text-sm empty:hidden">
-                No results found.
+                {ui("No results found.")}
               </Combobox.Empty>
               <Combobox.List>
                 {(item: SelectItem) => (

@@ -2,9 +2,11 @@ import { Toast } from "@base-ui/react/toast";
 import { X } from "lucide-react";
 
 import cn from "~/utils/cn";
+import { useI18n } from "~/utils/i18n";
 import { toastManager } from "~/utils/toast";
 
 function ToastList() {
+  const { text: ui } = useI18n();
   const { toasts } = Toast.useToastManager();
   return toasts.map((toast) => (
     <Toast.Root
@@ -15,9 +17,11 @@ function ToastList() {
       <Toast.Content
         className={cn("toast-content", "flex items-center justify-between gap-x-3 pl-4 pr-3 py-3")}
       >
-        <Toast.Description>{toast.description}</Toast.Description>
+        <Toast.Description>
+          {typeof toast.description === "string" ? ui(toast.description) : toast.description}
+        </Toast.Description>
         <Toast.Close
-          aria-label="Close"
+          aria-label={ui("Close")}
           className={cn(
             "inline-flex shrink-0 items-center justify-center rounded-full p-1",
             "bg-transparent hover:bg-hover",

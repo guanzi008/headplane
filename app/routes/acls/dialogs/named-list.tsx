@@ -3,6 +3,7 @@ import { useState } from "react";
 import Input from "~/components/input";
 import TokenList from "~/components/token-list";
 import { isValidGroupName, isValidTagName } from "~/utils/acl-policy";
+import { useI18n } from "~/utils/i18n";
 
 import EditorDialog from "./editor-dialog";
 
@@ -53,6 +54,8 @@ export default function NamedListDialog({
   suggestions,
   onSave,
 }: NamedListDialogProps) {
+  const { text: ui } = useI18n();
+
   const copy = COPY[kind];
   const [draftName, setDraftName] = useState(name ?? copy.prefix);
   const [draftMembers, setDraftMembers] = useState<string[]>(() => [...(members ?? [])]);
@@ -67,26 +70,32 @@ export default function NamedListDialog({
 
   return (
     <EditorDialog
-      description={copy.hint}
+      description={ui(copy.hint)}
       isDisabled={nameIsInvalid}
       isOpen={isOpen}
       onSubmit={() => onSave(trimmedName, draftMembers)}
       setIsOpen={setIsOpen}
-      submitLabel={name ? `Update ${copy.title}` : `Add ${copy.title}`}
-      title={name ? `Edit ${copy.title} ${name}` : `New ${copy.title}`}
+      submitLabel={ui(name ? `Update ${copy.title}` : `Add ${copy.title}`)}
+      title={
+        name
+          ? ui(kind === "group" ? "Edit group {name}" : "Edit tag {name}", { name })
+          : ui(`New ${copy.title}`)
+      }
     >
       <Input
-        errorMessage={isDuplicate ? `A ${copy.title} with this name already exists.` : copy.hint}
+        errorMessage={ui(
+          isDuplicate ? `A ${copy.title} with this name already exists.` : copy.hint,
+        )}
         invalid={showNameError}
-        label="Name"
+        label={ui("Name")}
         onChange={setDraftName}
         placeholder={`${copy.prefix}example`}
         value={draftName}
       />
       <TokenList
-        description={copy.fieldDescription}
-        emptyText={copy.empty}
-        label={copy.field}
+        description={ui(copy.fieldDescription)}
+        emptyText={ui(copy.empty)}
+        label={ui(copy.field)}
         onChange={setDraftMembers}
         placeholder={copy.placeholder}
         suggestions={suggestions}

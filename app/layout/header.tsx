@@ -163,6 +163,16 @@ export default function Header({ user, access, configAvailable }: HeaderProps) {
                 </div>
               </MenuItem>
               <MenuSeparator />
+              {rootRoute?.loaderData?.accountCenter && (
+                <MenuItem>
+                  <a href={rootRoute.loaderData.accountCenter}>{t("nav.accountCenter")}</a>
+                </MenuItem>
+              )}
+              {rootRoute?.loaderData?.platformAccounts && (
+                <MenuItem>
+                  <a href={rootRoute.loaderData.platformAccounts}>{t("nav.platformAccounts")}</a>
+                </MenuItem>
+              )}
               {colorSchemes.map(({ value, label, icon: Icon }) => (
                 <MenuItem
                   key={value}

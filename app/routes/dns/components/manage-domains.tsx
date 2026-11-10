@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function ManageDomains({ searchDomains, isDisabled, magic }: Props) {
-  const { t } = useI18n();
+  const { text: ui, t } = useI18n();
   const reorder = useReorder("move_domain", "domain");
   const domains = reorder.order(searchDomains);
 
@@ -43,12 +43,12 @@ export default function ManageDomains({ searchDomains, isDisabled, magic }: Prop
                 <div className="flex items-center gap-1">
                   {!isDisabled && reorder.controls(domains, index)}
                   <ActionDialog
-                    description="Devices stop trying this suffix on short names."
+                    description={ui("Devices stop trying this suffix on short names.")}
                     fields={{ domain }}
                     intent="remove_domain"
                     isDestructive
-                    submitLabel="Remove"
-                    title={`Remove search domain ${domain}?`}
+                    submitLabel={ui("Remove")}
+                    title={ui("Remove search domain {domain}?", { domain })}
                     trigger={<RemoveButton disabled={isDisabled} />}
                   />
                 </div>

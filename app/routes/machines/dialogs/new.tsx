@@ -8,6 +8,7 @@ import Input from "~/components/input";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "~/components/menu";
 import Select from "~/components/select";
 import type { User } from "~/types";
+import { useI18n } from "~/utils/i18n";
 import { normalizeRegistrationKey } from "~/utils/register-key";
 import { getUserDisplayName, sortUsersByDisplayName } from "~/utils/user";
 
@@ -19,23 +20,25 @@ export interface NewMachineProps {
 }
 
 export default function NewMachine(data: NewMachineProps) {
+  const { text: ui } = useI18n();
+
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const navigate = useNavigate();
 
   return (
     <>
       <ActionDialog
-        description="Run this on the device, then paste the key it prints."
+        description={ui("Run this on the device, then paste the key it prints.")}
         intent="register"
         onOpenChange={setIsRegisterOpen}
         open={isRegisterOpen}
-        submitLabel="Register"
-        title="Register a machine"
+        submitLabel={ui("Register")}
+        title={ui("Register a machine")}
       >
         <CodeBlock>{`tailscale up --login-server=${data.server}`}</CodeBlock>
         <Input
-          description="The registration URL or the full hskey-authreq-... key."
-          label="Machine key"
+          description={ui("The registration URL or the full hskey-authreq-... key.")}
+          label={ui("Machine key")}
           name="register_key"
           placeholder="hskey-authreq-XXXXXXXXXXXXXXXXXXXXXXXX"
           required
@@ -52,16 +55,16 @@ export default function NewMachine(data: NewMachineProps) {
             value: user.name,
             label: getUserDisplayName(user),
           }))}
-          label="Owner"
+          label={ui("Owner")}
           name="user"
-          placeholder="Select a user"
+          placeholder={ui("Select a user")}
           required
         />
       </ActionDialog>
       <Menu disabled={data.isDisabled}>
         <MenuTrigger className="bg-ink text-ink-fg hover:bg-ink/90 h-8 gap-1.5 rounded-md px-3 text-sm font-medium">
           <Plus className="size-3.5" />
-          Add machine
+          {ui("Add machine")}
         </MenuTrigger>
         <MenuContent>
           <MenuItem
@@ -70,7 +73,7 @@ export default function NewMachine(data: NewMachineProps) {
           >
             <div className="flex items-center gap-x-3">
               <Computer className="w-4" />
-              Register machine key
+              {ui("Register machine key")}
             </div>
           </MenuItem>
           <MenuItem
@@ -79,7 +82,7 @@ export default function NewMachine(data: NewMachineProps) {
           >
             <div className="flex items-center gap-x-3">
               <FileKey2 className="w-4" />
-              Create auth key
+              {ui("Create auth key")}
             </div>
           </MenuItem>
         </MenuContent>

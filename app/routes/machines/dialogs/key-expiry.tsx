@@ -1,6 +1,7 @@
 import ActionDialog from "~/components/action-dialog";
 import { KEY_EXPIRY_DAYS } from "~/server/headscale/api/resources/nodes";
 import type { Machine } from "~/types";
+import { useI18n } from "~/utils/i18n";
 import { isNoExpiry } from "~/utils/node-info";
 
 interface KeyExpiryProps {
@@ -10,21 +11,26 @@ interface KeyExpiryProps {
 }
 
 export default function KeyExpiry({ machine, isOpen, setIsOpen }: KeyExpiryProps) {
+  const { text: ui } = useI18n();
   const isDisabling = !isNoExpiry(machine.expiry);
 
   return (
     <ActionDialog
       description={
         isDisabling
-          ? "The machine stays signed in until you expire or remove it."
-          : `The machine has to sign in again in ${KEY_EXPIRY_DAYS} days, when its key expires.`
+          ? ui("The machine stays signed in until you expire or remove it.")
+          : ui("The machine has to sign in again in {days} days, when its key expires.", {
+              days: KEY_EXPIRY_DAYS,
+            })
       }
       fields={{ node_id: machine.id, disable_expiry: String(isDisabling) }}
       intent="toggle_expiry"
       onOpenChange={setIsOpen}
       open={isOpen}
-      submitLabel={isDisabling ? "Disable key expiry" : "Enable key expiry"}
-      title={`${isDisabling ? "Disable" : "Enable"} key expiry for ${machine.givenName}?`}
+      submitLabel={ui(isDisabling ? "Disable key expiry" : "Enable key expiry")}
+      title={ui(isDisabling ? "Disable key expiry for {name}?" : "Enable key expiry for {name}?", {
+        name: machine.givenName,
+      })}
     />
   );
 }

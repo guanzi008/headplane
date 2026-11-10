@@ -1,5 +1,7 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 
+import { uiMessages } from "./ui-messages";
+
 export const localeCookie = "hsc_locale";
 
 export type Locale = "en" | "zh-CN";
@@ -26,6 +28,8 @@ const messages = {
   "nav.headscale": ["Headscale", "Headscale"],
   "nav.download": ["Download", "下载"],
   "nav.apiKey": ["API key", "API 密钥"],
+  "nav.accountCenter": ["My account", "我的账号"],
+  "nav.platformAccounts": ["Registered accounts", "注册账号管理"],
   "nav.logout": ["Log out", "退出登录"],
   "color.system": ["System", "跟随系统"],
   "color.light": ["Light", "浅色"],
@@ -625,14 +629,29 @@ export function translate(
   return interpolate(entry[locale === "zh-CN" ? 1 : 0], vars);
 }
 
+const sourceMessages = new Map<string, string>([
+  ...Object.values(messages).map(([english, chinese]) => [english, chinese] as const),
+  ...Object.entries(uiMessages),
+]);
+
+export function translateText(
+  locale: Locale,
+  source: string,
+  vars?: Record<string, string | number>,
+): string {
+  return interpolate(locale === "zh-CN" ? (sourceMessages.get(source) ?? source) : source, vars);
+}
+
 interface I18nContextValue {
   locale: Locale;
   t: (key: MessageKey, vars?: Record<string, string | number>) => string;
+  text: (source: string, vars?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextValue>({
   locale: "en",
   t: (key, vars) => translate("en", key, vars),
+  text: (source, vars) => translateText("en", source, vars),
 });
 
 export function I18nProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
@@ -640,6 +659,7 @@ export function I18nProvider({ locale, children }: { locale: Locale; children: R
     () => ({
       locale,
       t: (key, vars) => translate(locale, key, vars),
+      text: (source, vars) => translateText(locale, source, vars),
     }),
     [locale],
   );

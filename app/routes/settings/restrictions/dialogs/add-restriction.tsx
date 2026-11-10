@@ -5,6 +5,7 @@ import ActionDialog from "~/components/action-dialog";
 import Button from "~/components/button";
 import Input from "~/components/input";
 import { fieldValidator } from "~/utils/form";
+import { useI18n } from "~/utils/i18n";
 
 import { type RestrictionType, restrictionValue } from "../schemas";
 
@@ -40,29 +41,32 @@ interface AddRestrictionProps {
 }
 
 export default function AddRestriction({ type }: AddRestrictionProps) {
+  const { text: ui } = useI18n();
   const [value, setValue] = useState("");
   const { title, label, description, placeholder } = copy[type];
   const domain = value.trim();
 
   return (
     <ActionDialog
-      description={description}
+      description={ui(description)}
       fields={{ type }}
       intent="add"
-      submitLabel={title}
-      title={title}
+      submitLabel={ui(title)}
+      title={ui(title)}
       trigger={
         <Button>
           <Plus className="size-3.5" />
-          {title}
+          {ui(title)}
         </Button>
       }
     >
       <Input
         description={
-          type === "domain" && domain.length > 0 ? `Matches <user>@${domain}` : undefined
+          type === "domain" && domain.length > 0
+            ? ui("Matches <user>@{domain}", { domain })
+            : undefined
         }
-        label={label}
+        label={ui(label)}
         name="value"
         onChange={setValue}
         placeholder={placeholder}

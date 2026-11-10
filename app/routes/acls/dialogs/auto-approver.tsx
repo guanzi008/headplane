@@ -4,6 +4,7 @@ import Input from "~/components/input";
 import Select from "~/components/select";
 import TokenList from "~/components/token-list";
 import { isValidRoute } from "~/utils/acl-policy";
+import { useI18n } from "~/utils/i18n";
 
 import EditorDialog from "./editor-dialog";
 
@@ -32,6 +33,8 @@ export default function AutoApproverDialog({
   suggestions,
   onSave,
 }: AutoApproverDialogProps) {
+  const { text: ui } = useI18n();
+
   const isNew = target === undefined;
   const [isExitNode, setIsExitNode] = useState(target === null);
   const [route, setRoute] = useState(target ?? "");
@@ -44,13 +47,15 @@ export default function AutoApproverDialog({
 
   return (
     <EditorDialog
-      description="Routes and exit nodes advertised by these users, groups or tags are approved without manual review."
+      description={ui(
+        "Routes and exit nodes advertised by these users, groups or tags are approved without manual review.",
+      )}
       isDisabled={isInvalid}
       isOpen={isOpen}
       onSubmit={() => onSave(isExitNode ? null : trimmedRoute, draft)}
       setIsOpen={setIsOpen}
-      submitLabel={isNew ? "Add approvers" : "Update approvers"}
-      title={isNew ? "New auto approver" : "Edit auto approver"}
+      submitLabel={isNew ? ui("Add approvers") : ui("Update approvers")}
+      title={isNew ? ui("New auto approver") : ui("Edit auto approver")}
     >
       {isNew ? (
         <Select
@@ -58,7 +63,7 @@ export default function AutoApproverDialog({
             { value: "route", label: "Subnet route" },
             { value: "exit", label: "Exit node" },
           ]}
-          label="Approve"
+          label={ui("Approve")}
           onValueChange={(value) => {
             const exit = value === "exit";
             setIsExitNode(exit);
@@ -76,16 +81,16 @@ export default function AutoApproverDialog({
               : "Enter an IPv4 or IPv6 prefix, for example 10.0.0.0/8."
           }
           invalid={trimmedRoute.length > 0 && routeIsInvalid}
-          label="Route"
+          label={ui("Route")}
           onChange={setRoute}
           placeholder="10.0.0.0/8"
           value={route}
         />
       )}
       <TokenList
-        description="Users, groups or tags whose machines are approved."
-        emptyText="No approvers yet"
-        label="Approvers"
+        description={ui("Users, groups or tags whose machines are approved.")}
+        emptyText={ui("No approvers yet")}
+        label={ui("Approvers")}
         onChange={setDraft}
         placeholder="tag:router"
         suggestions={suggestions}

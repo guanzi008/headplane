@@ -18,6 +18,7 @@ import {
 import { nodesResource, usersResource } from "~/server/headscale/live-store";
 import { Capabilities } from "~/server/web/roles";
 import { getOSInfo, getTSVersion } from "~/utils/host-info";
+import { useI18n } from "~/utils/i18n";
 import { extractTagOwnerTags, isNoExpiry, mapNodes, sortAssignableTags } from "~/utils/node-info";
 import { toastClientAction } from "~/utils/toast";
 import { getUserDisplayName, isTaggedDevicesUser } from "~/utils/user";
@@ -111,6 +112,8 @@ export default function Page({
     supportsDisablingKeyExpiry,
   },
 }: Route.ComponentProps) {
+  const { text: ui } = useI18n();
+
   const [showRouting, setShowRouting] = useState(false);
 
   const uiTags = useMemo(() => {
@@ -125,9 +128,9 @@ export default function Page({
 
   return (
     <div className="max-w-5xl">
-      <nav aria-label="Breadcrumb" className="text-muted mb-3 text-sm">
+      <nav aria-label={ui("Breadcrumb")} className="text-muted mb-3 text-sm">
         <Link className="hover:text-fg" to="/machines">
-          Machines
+          {ui("Machines")}
         </Link>
         <span className="mx-1.5">/</span>
         <span className="text-fg">{node.givenName}</span>
@@ -167,105 +170,117 @@ export default function Page({
       />
       <Routes isOpen={showRouting} node={node} setIsOpen={setShowRouting} />
       <Section
-        action={<Button onClick={() => setShowRouting(true)}>Edit routes</Button>}
+        action={<Button onClick={() => setShowRouting(true)}>{ui("Edit routes")}</Button>}
         description={
           <>
-            Expose subnets or route all traffic through this machine.{" "}
+            {ui("Expose subnets or route all traffic through this machine.")}{" "}
             <Link external styled to="https://tailscale.com/kb/1019/subnets">
-              Docs
+              {ui("Docs")}
             </Link>
           </>
         }
-        title="Routing"
+        title={ui("Routing")}
       >
         <SettingList>
           <Attribute
             isMono={subnetApprovedRoutes.length > 0}
-            name="Subnet routes"
-            tooltip="Traffic to these routes is sent through this machine."
+            name={ui("Subnet routes")}
+            tooltip={ui("Traffic to these routes is sent through this machine.")}
             value={subnetApprovedRoutes.length > 0 ? subnetApprovedRoutes.join("\n") : "None"}
           />
           {subnetWaitingRoutes.length > 0 ? (
             <Attribute
               isMono
-              name="Waiting for approval"
-              tooltip="This machine advertises these routes, but they must be approved before traffic is sent to them."
+              name={ui("Waiting for approval")}
+              tooltip={ui(
+                "This machine advertises these routes, but they must be approved before traffic is sent to them.",
+              )}
               value={subnetWaitingRoutes.join("\n")}
             />
           ) : undefined}
           <Attribute
-            name="Exit node"
-            tooltip="Whether this machine can route all internet traffic for your tailnet."
+            name={ui("Exit node")}
+            tooltip={ui("Whether this machine can route all internet traffic for your tailnet.")}
             value={exitStatus}
           />
         </SettingList>
       </Section>
-      <Section description="Who owns this machine and what it runs." title="Machine">
+      <Section description={ui("Who owns this machine and what it runs.")} title={ui("Machine")}>
         <SettingList>
-          <Attribute name="Owner" value={node.user ? getUserDisplayName(node.user) : "Tag-owned"} />
-          <Attribute name="Machine name" value={node.givenName} />
           <Attribute
-            name="OS hostname"
-            tooltip="Published by the machine's operating system and used as the default machine name."
+            name={ui("Owner")}
+            value={node.user ? getUserDisplayName(node.user) : "Tag-owned"}
+          />
+          <Attribute name={ui("Machine name")} value={node.givenName} />
+          <Attribute
+            name={ui("OS hostname")}
+            tooltip={ui(
+              "Published by the machine's operating system and used as the default machine name.",
+            )}
             value={node.name}
           />
           {stats ? (
             <>
-              <Attribute name="OS" value={getOSInfo(stats)} />
-              <Attribute isMono name="Tailscale version" value={getTSVersion(stats)} />
+              <Attribute name={ui("OS")} value={getOSInfo(stats)} />
+              <Attribute isMono name={ui("Tailscale version")} value={getTSVersion(stats)} />
             </>
           ) : undefined}
-          <Attribute name="Created" value={new Date(node.createdAt).toLocaleString()} />
+          <Attribute name={ui("Created")} value={new Date(node.createdAt).toLocaleString()} />
           <Attribute
-            name="Last seen"
+            name={ui("Last seen")}
             value={
               node.online
-                ? "Connected"
+                ? ui("Connected")
                 : !node.lastSeen
-                  ? "Never seen"
+                  ? ui("Never seen")
                   : new Date(node.lastSeen).toLocaleString()
             }
           />
           <Attribute
-            name="Key expiry"
-            value={!isNoExpiry(node.expiry) ? new Date(node.expiry!).toLocaleString() : "Never"}
+            name={ui("Key expiry")}
+            value={!isNoExpiry(node.expiry) ? new Date(node.expiry!).toLocaleString() : ui("Never")}
           />
           <Attribute
             isMono
             name="ID"
-            tooltip="Used to refer to this machine in the Headscale API."
+            tooltip={ui("Used to refer to this machine in the Headscale API.")}
             value={node.id}
           />
           <Attribute
             isCopyable
             isMono
-            name="Node key"
-            tooltip="Public key which uniquely identifies this machine."
+            name={ui("Node key")}
+            tooltip={ui("Public key which uniquely identifies this machine.")}
             value={node.nodeKey}
           />
         </SettingList>
       </Section>
-      <Section description="How other machines in your tailnet reach this one." title="Addresses">
+      <Section
+        description={ui("How other machines in your tailnet reach this one.")}
+        title={ui("Addresses")}
+      >
         <SettingList>
           <Attribute
             isCopyable
             isMono
             name="Tailscale IPv4"
-            tooltip="This machine's IPv4 address within your tailnet."
+            tooltip={ui("This machine's IPv4 address within your tailnet.")}
             value={getIpv4Address(node.ipAddresses)}
           />
           <Attribute
             isCopyable
             isMono
             name="Tailscale IPv6"
-            tooltip="This machine's IPv6 address within your tailnet. IPv6 works inside the tailnet even if your ISP does not support it."
+            tooltip={ui(
+              "This machine's IPv6 address within your tailnet. IPv6 works inside the tailnet even if your ISP does not support it.",
+            )}
             value={getIpv6Address(node.ipAddresses)}
           />
           <Attribute
             isCopyable
             isMono
             name="Short domain"
-            tooltip="Machines in your tailnet can reach this one by this name."
+            tooltip={ui("Machines in your tailnet can reach this one by this name.")}
             value={node.givenName}
           />
           {magic ? (
@@ -273,7 +288,7 @@ export default function Page({
               isCopyable
               isMono
               name="Full domain"
-              tooltip="The fully qualified MagicDNS name for this machine."
+              tooltip={ui("The fully qualified MagicDNS name for this machine.")}
               value={`${node.givenName}.${magic}`}
             />
           ) : undefined}
@@ -281,8 +296,10 @@ export default function Page({
       </Section>
       {stats ? (
         <Section
-          description="What the machine reported about its network. Useful when debugging connections."
-          title="Connectivity"
+          description={ui(
+            "What the machine reported about its network. Useful when debugging connections.",
+          )}
+          title={ui("Connectivity")}
         >
           <SettingList>
             {stats.Endpoints ? (
@@ -290,16 +307,18 @@ export default function Page({
             ) : undefined}
             <Attribute
               name="Varies"
-              tooltip="Whether the machine is behind a difficult NAT that changes its IP address depending on the destination."
+              tooltip={ui(
+                "Whether the machine is behind a difficult NAT that changes its IP address depending on the destination.",
+              )}
               value={stats.NetInfo?.MappingVariesByDestIP ? "Yes" : "No"}
             />
             <Attribute
               name="Hairpinning"
-              tooltip="Whether the machine needs to traverse NATs with hairpinning."
+              tooltip={ui("Whether the machine needs to traverse NATs with hairpinning.")}
               value={stats.NetInfo?.HairPinning ? "Yes" : "No"}
             />
-            <Attribute name="IPv6" value={stats.NetInfo?.WorkingIPv6 ? "Yes" : "No"} />
-            <Attribute name="UDP" value={stats.NetInfo?.WorkingUDP ? "Yes" : "No"} />
+            <Attribute name={ui("IPv6")} value={stats.NetInfo?.WorkingIPv6 ? "Yes" : "No"} />
+            <Attribute name={ui("UDP")} value={stats.NetInfo?.WorkingUDP ? "Yes" : "No"} />
             <Attribute name="UPnP" value={stats.NetInfo?.UPnP ? "Yes" : "No"} />
             <Attribute name="PCP" value={stats.NetInfo?.PCP ? "Yes" : "No"} />
             <Attribute name="NAT-PMP" value={stats.NetInfo?.PMP ? "Yes" : "No"} />

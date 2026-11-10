@@ -15,7 +15,7 @@ import { exit } from "node:process";
 import log from "~/utils/log";
 
 import { type StartOptions, composeListener, startHttpServer } from "../../runtime/http";
-import { build, config, createListener, dispose } from "./app";
+import { build, config, createListener, dispose, handleConsoleRequest } from "./app";
 import { configureBuild } from "./assets";
 
 // `import.meta.url` resolves to `build/server/index.js`; the built
@@ -63,22 +63,38 @@ const runtimeLogger = {
   error: (message: string, ...args: unknown[]) => log.error("server", message, ...args),
 };
 
+const requestListener = composeListener({
+  basename: config.server.base_path,
+  staticRoot: clientDir,
+  immutableAssets: true,
+  assetManifest: {
+    path: runtimeBuild.assets.url,
+    body: `window.__reactRouterManifest=${JSON.stringify(runtimeBuild.assets)};`,
+  },
+  logger: runtimeLogger,
+  requestListener: createListener(runtimeBuild),
+});
+
 startHttpServer({
   host: config.server.host,
   port: config.server.port,
   tls,
   logger: runtimeLogger,
   listenFile,
-  listener: composeListener({
-    basename: config.server.base_path,
-    staticRoot: clientDir,
-    immutableAssets: true,
-    assetManifest: {
-      path: runtimeBuild.assets.url,
-      body: `window.__reactRouterManifest=${JSON.stringify(runtimeBuild.assets)};`,
-    },
-    logger: runtimeLogger,
-    requestListener: createListener(runtimeBuild),
-  }),
+  listener: (request, response) => {
+    void (async () => {
+      if (handleConsoleRequest && (await handleConsoleRequest(request, response))) return;
+      requestListener(request, response);
+    })().catch((error: unknown) => {
+      log.error(
+        "server",
+        "Network request failed: %s",
+        error instanceof Error ? error.message : String(error),
+      );
+      if (!response.headersSent)
+        response.writeHead(503, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end("服务暂时不可用，请稍后重试。 / Service temporarily unavailable.");
+    });
+  },
   onShutdown: dispose,
 });

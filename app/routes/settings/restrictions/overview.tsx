@@ -6,6 +6,7 @@ import PageError from "~/components/page-error";
 import PageHeader from "~/components/page-header";
 import { authContext, headscaleConfigContext, integrationContext } from "~/server/context";
 import { Capabilities } from "~/server/web/roles";
+import { useI18n } from "~/utils/i18n";
 import { toastClientAction } from "~/utils/toast";
 
 import type { Route } from "./+types/overview";
@@ -43,6 +44,8 @@ export const clientAction = toastClientAction;
 export default function Page({
   loaderData: { access, writable, isAutoApplied, settings },
 }: Route.ComponentProps) {
+  const { text: ui } = useI18n();
+
   const isDisabled = !writable || !access;
 
   return (
@@ -51,13 +54,13 @@ export default function Page({
         isSubpage
         description={
           <>
-            Limit who can sign in through OIDC. Headscale and Headplane both enforce these.{" "}
+            {ui("Limit who can sign in through OIDC. Headscale and Headplane both enforce these.")}{" "}
             <Link external styled to="https://headscale.net/stable/ref/oidc/#basic-configuration">
-              Docs
+              {ui("Docs")}
             </Link>
           </>
         }
-        title="Sign-in restrictions"
+        title={ui("Sign-in restrictions")}
       />
       {isDisabled && (
         <Callout className="mb-6">
@@ -68,12 +71,13 @@ export default function Page({
       )}
       {!isDisabled && !isAutoApplied && (
         <Callout className="mb-6" variant="warning">
-          Changes are saved to the Headscale configuration but only take effect once Headscale
-          restarts. Set up an{" "}
+          {ui(
+            "Changes are saved to the Headscale configuration but only take effect once Headscale restarts. Set up an",
+          )}{" "}
           <Link external styled to="https://headplane.net/configuration/integrations">
-            integration
+            {ui("integration")}
           </Link>{" "}
-          to restart it automatically.
+          {ui("to restart it automatically.")}
         </Callout>
       )}
       <RestrictionSection isDisabled={isDisabled} type="domain" values={settings.domains} />

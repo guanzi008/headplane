@@ -4,6 +4,7 @@ import ActionDialog from "~/components/action-dialog";
 import Button from "~/components/button";
 import Input from "~/components/input";
 import { fieldValidator } from "~/utils/form";
+import { useI18n } from "~/utils/i18n";
 import { USERNAME_RULE } from "~/utils/user";
 
 import { username } from "../schemas";
@@ -16,31 +17,35 @@ interface CreateUserProps {
 const validateUsername = fieldValidator(username);
 
 export default function CreateUser({ isOidc, isDisabled }: CreateUserProps) {
+  const { text: ui } = useI18n();
+
   return (
     <ActionDialog
-      description={`The user is listed under Unlinked Headscale Users until they sign in${
-        isOidc ? " through your OIDC provider" : ""
-      }, which links them to a Headplane account.`}
+      description={ui(
+        isOidc
+          ? "The user is listed under Unlinked Headscale Users until they sign in through your OIDC provider, which links them to a Headplane account."
+          : "The user is listed under Unlinked Headscale Users until they sign in, which links them to a Headplane account.",
+      )}
       intent="create"
-      submitLabel="Create user"
-      title="Create a Headscale user"
+      submitLabel={ui("Create user")}
+      title={ui("Create a Headscale user")}
       trigger={
         <Button disabled={isDisabled} variant="primary">
           <Plus className="size-3.5" />
-          Add user
+          {ui("Add user")}
         </Button>
       }
     >
       <Input
         description={USERNAME_RULE}
-        label="Username"
+        label={ui("Username")}
         name="name"
         placeholder="my-new-user"
         required
         validate={validateUsername}
       />
-      <Input label="Display name" name="display_name" placeholder="John Doe" />
-      <Input label="Email" name="email" placeholder="name@example.com" type="email" />
+      <Input label={ui("Display name")} name="display_name" placeholder="John Doe" />
+      <Input label={ui("Email")} name="email" placeholder="name@example.com" type="email" />
     </ActionDialog>
   );
 }

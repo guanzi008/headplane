@@ -4,6 +4,7 @@ import { useState } from "react";
 import Chip from "~/components/chip";
 import List from "~/components/list";
 import type { AclRule, Grant, Policy, SshRule } from "~/utils/acl-policy";
+import { useI18n } from "~/utils/i18n";
 
 import AclRuleDialog from "../dialogs/acl-rule";
 import AutoApproverDialog, { type ApproverTarget } from "../dialogs/auto-approver";
@@ -39,6 +40,8 @@ export default function RulesEditor({
   sources,
   destinations,
 }: RulesEditorProps) {
+  const { text: ui } = useI18n();
+
   const [editing, setEditing] = useState<Editing>(null);
 
   const aclRule =
@@ -195,10 +198,12 @@ export default function RulesEditor({
       ) : null}
 
       <Section
-        description="Rules are evaluated top to bottom. Traffic is denied unless a rule allows it."
+        description={ui(
+          "Rules are evaluated top to bottom. Traffic is denied unless a rule allows it.",
+        )}
         isDisabled={isDisabled}
         onAdd={() => setEditing({ kind: "acl", index: null })}
-        title="Access rules"
+        title={ui("Access rules")}
       >
         {policy.acls.length === 0 ? (
           <Empty text="No access rules are defined yet." />
@@ -232,10 +237,12 @@ export default function RulesEditor({
 
       {canEditGrants ? (
         <Section
-          description="Grants allow traffic like access rules, with ports and protocols set separately. Headscale combines them with the access rules."
+          description={ui(
+            "Grants allow traffic like access rules, with ports and protocols set separately. Headscale combines them with the access rules.",
+          )}
           isDisabled={isDisabled}
           onAdd={() => setEditing({ kind: "grant", index: null })}
-          title="Grants"
+          title={ui("Grants")}
         >
           {policy.grants.length === 0 ? (
             <Empty text="No grants are defined yet." />
@@ -252,13 +259,13 @@ export default function RulesEditor({
                   <ChipRow values={entry.dst} />
                   {entry.ip.length > 0 ? (
                     <>
-                      <span className="text-xs opacity-60">on</span>
+                      <span className="text-xs opacity-60">{ui("on")}</span>
                       <ChipRow values={entry.ip} />
                     </>
                   ) : null}
                   {entry.via.length > 0 ? (
                     <>
-                      <span className="text-xs opacity-60">via</span>
+                      <span className="text-xs opacity-60">{ui("via")}</span>
                       <ChipRow values={entry.via} />
                     </>
                   ) : null}
@@ -278,10 +285,12 @@ export default function RulesEditor({
       ) : null}
 
       <Section
-        description="Control which nodes can be reached over Tailscale SSH and as which local user."
+        description={ui(
+          "Control which nodes can be reached over Tailscale SSH and as which local user.",
+        )}
         isDisabled={isDisabled}
         onAdd={() => setEditing({ kind: "ssh", index: null })}
-        title="SSH rules"
+        title={ui("SSH rules")}
       >
         {policy.ssh.length === 0 ? (
           <Empty text="No SSH rules are defined yet." />
@@ -297,7 +306,7 @@ export default function RulesEditor({
                 <ChipRow values={rule.src} />
                 <ArrowRight className="h-4 w-4 shrink-0 opacity-60" />
                 <ChipRow values={rule.dst} />
-                <span className="text-xs opacity-60">as</span>
+                <span className="text-xs opacity-60">{ui("as")}</span>
                 <ChipRow values={rule.users} />
               </div>
               <RowActions
@@ -313,10 +322,10 @@ export default function RulesEditor({
       </Section>
 
       <Section
-        description="Named IP addresses and CIDR ranges that can be referenced from rules."
+        description={ui("Named IP addresses and CIDR ranges that can be referenced from rules.")}
         isDisabled={isDisabled}
         onAdd={() => setEditing({ kind: "host", name: null })}
-        title="Hosts"
+        title={ui("Hosts")}
       >
         {hostEntries.length === 0 ? (
           <Empty text="No hosts are defined yet." />
@@ -342,10 +351,12 @@ export default function RulesEditor({
       </Section>
 
       <Section
-        description="Subnet routes and exit nodes advertised by these users, groups or tags are approved automatically."
+        description={ui(
+          "Subnet routes and exit nodes advertised by these users, groups or tags are approved automatically.",
+        )}
         isDisabled={isDisabled}
         onAdd={() => setEditing({ kind: "approver" })}
-        title="Auto approvers"
+        title={ui("Auto approvers")}
       >
         {approverEntries.length === 0 ? (
           <Empty text="No auto approvers are defined yet." />

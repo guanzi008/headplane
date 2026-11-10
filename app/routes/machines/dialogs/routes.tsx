@@ -7,6 +7,7 @@ import Link from "~/components/link";
 import { Row, RowList } from "~/components/section";
 import Switch from "~/components/switch";
 import type { ActionResult } from "~/utils/form";
+import { useI18n } from "~/utils/i18n";
 import type { PopulatedNode } from "~/utils/node-info";
 
 interface RoutesProps {
@@ -16,6 +17,8 @@ interface RoutesProps {
 }
 
 export default function Routes({ node, isOpen, setIsOpen }: RoutesProps) {
+  const { text: ui } = useI18n();
+
   const fetcher = useFetcher<ActionResult>();
   const subnets = [
     ...node.customRouting.subnetApprovedRoutes,
@@ -36,18 +39,20 @@ export default function Routes({ node, isOpen, setIsOpen }: RoutesProps) {
 
   return (
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
-      <DialogTitle>Routes for {node.givenName}</DialogTitle>
+      <DialogTitle>
+        {ui("Routes for")} {node.givenName}
+      </DialogTitle>
       <section className="flex flex-col gap-2">
-        <h3 className="font-medium">Subnet routes</h3>
+        <h3 className="font-medium">{ui("Subnet routes")}</h3>
         <p className="text-muted">
-          Reach devices that can&apos;t run Tailscale through IP ranges this machine advertises.{" "}
+          {ui("Reach devices that can't run Tailscale through IP ranges this machine advertises.")}{" "}
           <Link external styled to="https://tailscale.com/kb/1019/subnets">
-            Docs
+            {ui("Docs")}
           </Link>
         </p>
         {subnets.length === 0 ? (
           <p className="text-muted py-2.5 text-sm">
-            This machine doesn&apos;t advertise any routes
+            {ui("This machine doesn't advertise any routes")}
           </p>
         ) : (
           <RowList>
@@ -56,7 +61,7 @@ export default function Routes({ node, isOpen, setIsOpen }: RoutesProps) {
                 action={
                   <Switch
                     defaultChecked={node.approvedRoutes.includes(route)}
-                    label={`Approve ${route}`}
+                    label={ui("Approve {route}", { route })}
                     onCheckedChange={(checked) => submit([route], checked)}
                   />
                 }
@@ -69,16 +74,16 @@ export default function Routes({ node, isOpen, setIsOpen }: RoutesProps) {
         )}
       </section>
       <section className="flex flex-col gap-2">
-        <h3 className="font-medium">Exit node</h3>
+        <h3 className="font-medium">{ui("Exit node")}</h3>
         <p className="text-muted">
-          Let devices send their internet traffic through this machine.{" "}
+          {ui("Let devices send their internet traffic through this machine.")}{" "}
           <Link external styled to="https://tailscale.com/kb/1103/exit-nodes">
-            Docs
+            {ui("Docs")}
           </Link>
         </p>
         {node.customRouting.exitRoutes.length === 0 ? (
           <p className="text-muted py-2.5 text-sm">
-            This machine isn&apos;t advertised as an exit node
+            {ui("This machine isn't advertised as an exit node")}
           </p>
         ) : (
           <RowList>
@@ -86,12 +91,12 @@ export default function Routes({ node, isOpen, setIsOpen }: RoutesProps) {
               action={
                 <Switch
                   defaultChecked={node.customRouting.exitApproved}
-                  label="Use as exit node"
+                  label={ui("Use as exit node")}
                   onCheckedChange={(checked) => submit(node.customRouting.exitRoutes, checked)}
                 />
               }
             >
-              Use as exit node
+              {ui("Use as exit node")}
             </Row>
           </RowList>
         )}
@@ -100,7 +105,7 @@ export default function Routes({ node, isOpen, setIsOpen }: RoutesProps) {
         <Callout variant="error">{fetcher.data.errors.form ?? "Couldn't update routes."}</Callout>
       )}
       <DialogActions>
-        <DialogClose render={<Button>Done</Button>} />
+        <DialogClose render={<Button>{ui("Done")}</Button>} />
       </DialogActions>
     </Dialog>
   );

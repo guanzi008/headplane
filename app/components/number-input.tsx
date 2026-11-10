@@ -3,6 +3,7 @@ import { Minus, Plus } from "lucide-react";
 
 import Field, { controlClass } from "~/components/field";
 import cn from "~/utils/cn";
+import { useI18n } from "~/utils/i18n";
 
 export interface NumberInputProps {
   label: string;
@@ -30,6 +31,8 @@ export default function NumberInput({
   disabled,
   ...props
 }: NumberInputProps) {
+  const { text: ui } = useI18n();
+
   // name goes on Root, which submits the raw number via a hidden input.
   // The visible Input holds the locale-formatted string.
   return (
@@ -46,10 +49,10 @@ export default function NumberInput({
       >
         <NumberField.Group className={cn(controlClass, "flex items-center pr-0.5")}>
           <NumberField.Input className="h-full w-full bg-transparent pl-2.5 outline-hidden" />
-          <NumberField.Decrement aria-label="Decrement" className={stepperClass}>
+          <NumberField.Decrement aria-label={ui("Decrement")} className={stepperClass}>
             <Minus className="size-3.5" />
           </NumberField.Decrement>
-          <NumberField.Increment aria-label="Increment" className={stepperClass}>
+          <NumberField.Increment aria-label={ui("Increment")} className={stepperClass}>
             <Plus className="size-3.5" />
           </NumberField.Increment>
         </NumberField.Group>

@@ -2,6 +2,7 @@ import { CircleAlert, Info, TriangleAlert, X } from "lucide-react";
 import React, { useState } from "react";
 
 import cn from "~/utils/cn";
+import { useI18n } from "~/utils/i18n";
 
 type Variant = "neutral" | "info" | "warning" | "error";
 
@@ -29,6 +30,8 @@ export default function Callout({
   className,
   children,
 }: CalloutProps) {
+  const { text: ui } = useI18n();
+
   const [isDismissed, setIsDismissed] = useState(false);
   if (isDismissed) {
     return null;
@@ -49,7 +52,7 @@ export default function Callout({
       </div>
       {isDismissable && (
         <button
-          aria-label="Dismiss"
+          aria-label={ui("Dismiss")}
           className="focus-ring text-muted hover:text-fg -m-0.5 shrink-0 rounded-sm p-0.5"
           onClick={() => setIsDismissed(true)}
           type="button"

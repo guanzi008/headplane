@@ -65,6 +65,11 @@ export const generalAction = createAction({
     set_log_level: {
       fields: { level: v.picklist(logLevels, "Choose a valid log level.") },
       async handler(input, { config, restart }) {
+        if (process.env.HSC_CONSOLE_TAILNETS_DIR)
+          throw new ActionError(
+            "Platform server settings cannot be changed from a personal network.",
+            403,
+          );
         await config.patch([{ path: "log.level", value: input.level }]);
         await restart();
         return ok("Log level saved");
@@ -93,6 +98,11 @@ export const generalAction = createAction({
     set_disable_check_updates: {
       fields: { enabled: toggle },
       async handler(input, { config, restart }) {
+        if (process.env.HSC_CONSOLE_TAILNETS_DIR)
+          throw new ActionError(
+            "Platform server settings cannot be changed from a personal network.",
+            403,
+          );
         const enabled = input.enabled === "true";
         await config.patch([{ path: "disable_check_updates", value: enabled }]);
         await restart();

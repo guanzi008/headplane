@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { parse } from "yaml";
 
 import { generalAction } from "~/routes/settings/general/general-actions";
@@ -79,5 +79,24 @@ describe("server settings", () => {
     expect(statusOf(await save({ intent: "set_node_expiry", expiry: "30d" }, member.cookie))).toBe(
       403,
     );
+  });
+
+  test("personal network owners cannot change platform server settings", async () => {
+    const before = await readFile(tailnet.server.configPath, "utf8");
+    vi.stubEnv("HSC_CONSOLE_TAILNETS_DIR", "/personal-networks");
+    try {
+      expect(await app.call(loader, "/settings/general", { as: owner })).toMatchObject({
+        managedNetwork: true,
+      });
+      expect(statusOf(await save({ intent: "set_log_level", level: "trace" }))).toBe(403);
+      expect(statusOf(await save({ intent: "set_disable_check_updates", enabled: "false" }))).toBe(
+        403,
+      );
+      expect(await readFile(tailnet.server.configPath, "utf8")).toBe(before);
+      expect(statusOf(await save({ intent: "set_node_expiry", expiry: "30d" }))).toBe(200);
+      expect(await written()).toMatchObject({ node: { expiry: "30d" } });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

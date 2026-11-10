@@ -38,6 +38,11 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     colorScheme,
     locale: getLocale(request) satisfies Locale,
     basePath: config.server.base_path,
+    accountCenter: process.env.HSC_CONSOLE_TAILNETS_DIR ? "/idp/account" : undefined,
+    platformAccounts:
+      process.env.HSC_CONSOLE_TAILNETS_DIR && request.headers.get("X-HSC-Platform-Admin") === "1"
+        ? "/idp/users"
+        : undefined,
   };
 }
 

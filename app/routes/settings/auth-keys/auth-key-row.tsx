@@ -1,6 +1,7 @@
 import Chip from "~/components/chip";
 import { TableCell } from "~/components/table";
 import type { PreAuthKey, User } from "~/types";
+import { useI18n } from "~/utils/i18n";
 import { formatTimeDelta, formatTimeUntil } from "~/utils/time";
 import { getUserDisplayName } from "~/utils/user";
 
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export default function AuthKeyRow({ authKey, user }: Props) {
+  const { text: ui } = useI18n();
+
   const createdAt = new Date(authKey.createdAt);
   const expiration = authKey.expiration === null ? null : new Date(authKey.expiration);
   const isPastExpiry = expiration !== null && expiration < new Date();
@@ -36,12 +39,12 @@ export default function AuthKeyRow({ authKey, user }: Props) {
         </div>
       </TableCell>
       <TableCell>
-        {user ? getUserDisplayName(user) : <span className="text-muted">Tags only</span>}
+        {user ? getUserDisplayName(user) : <span className="text-muted">{ui("Tags only")}</span>}
       </TableCell>
       <TableCell
         className={isPastExpiry ? "text-muted whitespace-nowrap" : "whitespace-nowrap"}
         suppressHydrationWarning
-        title={expiration?.toLocaleString() ?? "Never expires"}
+        title={expiration?.toLocaleString() ?? ui("Never expires")}
       >
         {expiry}
       </TableCell>

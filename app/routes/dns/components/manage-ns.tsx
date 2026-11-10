@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function ManageNS({ global, split, isDisabled }: Props) {
-  const { t } = useI18n();
+  const { text: ui, t } = useI18n();
   const reorder = useReorder("move_ns", "nameserver");
 
   // Global servers come first, then each split domain's servers. Order only
@@ -61,16 +61,16 @@ export default function ManageNS({ global, split, isDisabled }: Props) {
                     list.length > 1 &&
                     reorder.controls(list, index, { split_domain: domain ?? "" })}
                   <ActionDialog
-                    description={
+                    description={ui(
                       domain
-                        ? `Devices stop using this nameserver for ${domain}.`
-                        : "Devices stop using this nameserver for queries outside the tailnet."
-                    }
+                        ? ui("Devices stop using this nameserver for {domain}.", { domain })
+                        : "Devices stop using this nameserver for queries outside the tailnet.",
+                    )}
                     fields={domain ? { nameserver: ns, split_domain: domain } : { nameserver: ns }}
                     intent="remove_ns"
                     isDestructive
-                    submitLabel="Remove"
-                    title={`Remove nameserver ${ns}?`}
+                    submitLabel={ui("Remove")}
+                    title={ui("Remove nameserver {server}?", { server: ns })}
                     trigger={<RemoveButton disabled={isDisabled} />}
                   />
                 </div>

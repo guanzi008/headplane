@@ -8,6 +8,7 @@ import log from "~/utils/log";
 
 import { ConfigError } from "./config/error";
 import { loadConfig } from "./config/load";
+import { createConsoleContexts } from "./console";
 import { createAppContext, createRouterContext } from "./context";
 
 log.info("server", "Headplane is booting up (PID %d)", process.pid);
@@ -35,25 +36,45 @@ if ((config.server.tls_cert_path || config.server.tls_key_path) && !config.serve
   config.server.cookie_secure = true;
 }
 
-const ctx = await createAppContext(config).catch((error) => {
-  const message = error instanceof ConfigError ? error.message : error;
-  log.error("server", "Failed to start Headplane: %s", message);
-  exit(1);
-});
+const consoleDirectory = process.env.HSC_CONSOLE_TAILNETS_DIR;
+const consoleSecret = process.env.HSC_CONSOLE_PROXY_SECRET;
+if (
+  Boolean(consoleDirectory) !== Boolean(consoleSecret) ||
+  (consoleSecret && consoleSecret.length < 32)
+) {
+  throw new Error(
+    "Console network directory and a proxy secret of at least 32 characters are required together",
+  );
+}
+const consoleContexts =
+  consoleDirectory && consoleSecret
+    ? createConsoleContexts(consoleDirectory, consoleSecret, config.server.base_path)
+    : undefined;
+const ctx = consoleContexts
+  ? undefined
+  : await createAppContext(config).catch((error) => {
+      const message = error instanceof ConfigError ? error.message : error;
+      log.error("server", "Failed to start Headplane: %s", message);
+      exit(1);
+    });
 
-ctx.startServices();
+ctx?.startServices();
 export { config };
 
 // Handles SIGTERM/SIGINT and testing signals for shutdown
 export async function dispose(): Promise<void> {
-  await ctx.dispose();
+  await consoleContexts?.dispose();
+  await ctx?.dispose();
 }
+
+export const handleConsoleRequest = consoleContexts?.handle;
 
 // TODO: Move reverse proxy translation from OIDC logic to here. That kind of
 // translation is needed for other things too, we should have it here.
-function getLoadContext(request: Request, client: ClientAddress) {
-  ctx.auth.registerRequestClientAddress(request, client.address);
-  return createRouterContext(ctx);
+async function getLoadContext(request: Request, client: ClientAddress) {
+  const services = consoleContexts ? await consoleContexts.get(request) : ctx!;
+  services.auth.registerRequestClientAddress(request, client.address);
+  return createRouterContext(services);
 }
 
 interface ClientAddress {

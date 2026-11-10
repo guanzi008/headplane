@@ -2,6 +2,7 @@ import { Link as RouterLink } from "react-router";
 
 import Button from "~/components/button";
 import Shell from "~/routes/auth/login/shell";
+import { useI18n } from "~/utils/i18n";
 
 export const sshErrors = {
   wasm_missing: {
@@ -58,6 +59,8 @@ export function isSSHError(error: unknown): error is SSHErrorProps {
 export const SSH_DOCS_URL = "https://headplane.net/features/ssh";
 
 export function SSHError({ title, message, anchor }: SSHErrorProps) {
+  const { text: ui } = useI18n();
+
   return (
     <Shell description={message} title={title}>
       <div className="flex flex-wrap items-center gap-3">
@@ -69,7 +72,7 @@ export function SSHError({ title, message, anchor }: SSHErrorProps) {
           Read the docs
         </Button>
         <Button nativeButton={false} render={<RouterLink reloadDocument to="/" />}>
-          Go to Headplane
+          {ui("Go to Headplane")}
         </Button>
       </div>
     </Shell>

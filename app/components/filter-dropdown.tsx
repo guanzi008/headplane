@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "~/components/menu";
 import cn from "~/utils/cn";
+import { useI18n } from "~/utils/i18n";
 
 export interface FilterDropdownProps {
   label: string;
@@ -11,6 +12,8 @@ export interface FilterDropdownProps {
 }
 
 export default function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps) {
+  const { text: ui } = useI18n();
+
   const activeOption = options.find((o) => o.value === value) ?? null;
   const isActive = activeOption !== null;
 
@@ -49,7 +52,7 @@ export default function FilterDropdown({ label, value, options, onChange }: Filt
         {isActive && (
           <>
             <MenuSeparator />
-            <MenuItem onClick={() => onChange(null)}>Clear filter</MenuItem>
+            <MenuItem onClick={() => onChange(null)}>{ui("Clear filter")}</MenuItem>
           </>
         )}
       </MenuContent>

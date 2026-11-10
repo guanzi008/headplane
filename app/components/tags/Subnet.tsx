@@ -1,3 +1,5 @@
+import { useI18n } from "~/utils/i18n";
+
 import Chip from "../chip";
 import Tooltip from "../tooltip";
 
@@ -7,15 +9,18 @@ export interface SubnetTagProps {
 }
 
 export function SubnetTag({ isEnabled, count }: SubnetTagProps) {
+  const { text: ui } = useI18n();
+
   return (
     <Tooltip
       content={
         isEnabled ? (
-          <>This machine advertises subnet routes.</>
+          <>{ui("This machine advertises subnet routes.")}</>
         ) : (
           <>
-            This machine has subnet routes waiting for approval. Review them from "Edit route
-            settings" in the machine's menu.
+            {ui(
+              'This machine has subnet routes waiting for approval. Review them from "Edit route settings" in the machine\'s menu.',
+            )}
           </>
         )
       }

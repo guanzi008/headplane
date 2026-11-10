@@ -6,6 +6,7 @@ import Button from "~/components/button";
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "~/components/menu";
 import type { User } from "~/types";
 import cn from "~/utils/cn";
+import { useI18n } from "~/utils/i18n";
 import { isNoExpiry, type PopulatedNode } from "~/utils/node-info";
 
 import Delete from "../dialogs/delete";
@@ -41,6 +42,8 @@ export default function MachineMenu({
   supportsNodeOwnerChange,
   supportsDisablingKeyExpiry,
 }: MenuProps) {
+  const { text: ui } = useI18n();
+
   const [modal, setModal] = useState<Modal>(null);
   const sshUrl = useHref(`/ssh/${node.givenName}`);
   const supportsTailscaleSSH = node.hostInfo?.sshHostKeys && node.hostInfo?.sshHostKeys.length > 0;
@@ -155,7 +158,7 @@ export default function MachineMenu({
         >
           {isFullButton ? (
             <>
-              Manage
+              {ui("Manage")}
               <ChevronDown className="size-3.5" />
             </>
           ) : (
@@ -163,25 +166,25 @@ export default function MachineMenu({
           )}
         </MenuTrigger>
         <MenuContent>
-          <MenuItem onClick={() => setModal("rename")}>Edit machine name</MenuItem>
+          <MenuItem onClick={() => setModal("rename")}>{ui("Edit machine name")}</MenuItem>
           {supportsDisablingKeyExpiry && (
             <MenuItem onClick={() => setModal("key-expiry")}>
-              {isNoExpiry(node.expiry) ? "Enable" : "Disable"} key expiry
+              {ui(isNoExpiry(node.expiry) ? "Enable key expiry" : "Disable key expiry")}
             </MenuItem>
           )}
-          <MenuItem onClick={() => setModal("routes")}>Edit route settings</MenuItem>
-          <MenuItem onClick={() => setModal("tags")}>Edit ACL tags</MenuItem>
+          <MenuItem onClick={() => setModal("routes")}>{ui("Edit route settings")}</MenuItem>
+          <MenuItem onClick={() => setModal("tags")}>{ui("Edit ACL tags")}</MenuItem>
           {supportsNodeOwnerChange && (
-            <MenuItem onClick={() => setModal("move")}>Change owner</MenuItem>
+            <MenuItem onClick={() => setModal("move")}>{ui("Change owner")}</MenuItem>
           )}
           <MenuSeparator />
           {!isNoExpiry(node.expiry) && (
             <MenuItem variant="danger" disabled={node.expired} onClick={() => setModal("expire")}>
-              Expire
+              {ui("Expire")}
             </MenuItem>
           )}
           <MenuItem variant="danger" onClick={() => setModal("remove")}>
-            Remove
+            {ui("Remove")}
           </MenuItem>
         </MenuContent>
       </Menu>

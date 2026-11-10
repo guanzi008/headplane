@@ -2,6 +2,7 @@ import { Ellipsis } from "lucide-react";
 import { useState } from "react";
 
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "~/components/menu";
+import { useI18n } from "~/utils/i18n";
 
 import Delete from "../dialogs/delete-user";
 import LinkUser from "../dialogs/link-user";
@@ -33,6 +34,8 @@ export default function UserMenu({
   policyGroups,
   policyHasComments,
 }: MenuProps) {
+  const { text: ui } = useI18n();
+
   const [modal, setModal] = useState<Modal>(null);
 
   const isLinked = currentLink !== undefined;
@@ -110,19 +113,19 @@ export default function UserMenu({
             disabled={!isLinked || user.role === "owner"}
             onClick={() => setModal("reassign")}
           >
-            Change role
+            {ui("Change role")}
           </MenuItem>
           <MenuItem onClick={() => setModal("link")}>
-            {isLinked ? "Change linked user" : "Link Headscale user"}
+            {ui(isLinked ? "Change linked user" : "Link Headscale user")}
           </MenuItem>
           {canEditGroups && user.linkedHeadscaleUser && (
-            <MenuItem onClick={() => setModal("groups")}>Edit groups</MenuItem>
+            <MenuItem onClick={() => setModal("groups")}>{ui("Edit groups")}</MenuItem>
           )}
           {isOwner && !isSelf && (
             <>
               <MenuSeparator />
               <MenuItem variant="danger" onClick={() => setModal("transfer")}>
-                Transfer ownership
+                {ui("Transfer ownership")}
               </MenuItem>
             </>
           )}
@@ -130,7 +133,7 @@ export default function UserMenu({
             <>
               <MenuSeparator />
               <MenuItem variant="danger" onClick={() => setModal("delete")}>
-                Delete
+                {ui("Delete")}
               </MenuItem>
             </>
           )}

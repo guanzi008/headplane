@@ -1,0 +1,427 @@
+// Source-text messages for the shared controls and management dialogs.
+// Protocol values, policy identifiers, and examples stay in their original form.
+export const uiMessages: Readonly<Record<string, string>> = {
+  "Platform server settings cannot be changed from a personal network.":
+    "平台服务器设置不能在个人网络中修改。",
+  "Managed personal network": "托管个人网络",
+  "About {label}": "关于{label}",
+  Members: "成员",
+  "No members yet": "尚未添加成员",
+  "Headscale users that belong to this group.": "属于此用户组的 Headscale 用户。",
+  "Tag owners": "标签所有者",
+  "No owners yet": "尚未添加所有者",
+  "Users and groups allowed to assign this tag to a node.":
+    "允许将此标签分配给设备的用户和用户组。",
+  "Group names must start with group: and may only contain lowercase letters, numbers and dashes.":
+    "用户组名称必须以 group: 开头，且只能包含小写字母、数字和连字符。",
+  "Tag names must start with tag: and may only contain lowercase letters, numbers and dashes.":
+    "标签名称必须以 tag: 开头，且只能包含小写字母、数字和连字符。",
+  "Add group": "添加用户组",
+  "Update group": "更新用户组",
+  "New group": "新建用户组",
+  "Edit group {name}": "编辑用户组 {name}",
+  "Add tag": "添加标签",
+  "Update tag": "更新标签",
+  "New tag": "新建标签",
+  "Edit tag {name}": "编辑标签 {name}",
+  "A group with this name already exists.": "已存在同名用户组。",
+  "A tag with this name already exists.": "已存在同名标签。",
+  Group: "用户组",
+  "Email domains": "邮箱域名",
+  "Only users with an email address at this domain can sign in through OIDC.":
+    "仅允许使用此域名邮箱的用户通过 OIDC 登录。",
+  "Only members of this OIDC group can sign in.": "仅允许此 OIDC 用户组中的成员登录。",
+  "Only this OIDC user can sign in.": "仅允许此 OIDC 用户登录。",
+  "Only people with an email address at one of these domains can sign in.":
+    "仅允许使用所列域名邮箱的用户登录。",
+  "Any email domain can sign in.": "允许任意邮箱域名的用户登录。",
+  "Only members of one of these groups in your identity provider can sign in.":
+    "仅允许身份提供方中所列用户组的成员登录。",
+  "Any group can sign in.": "允许任意用户组的成员登录。",
+  "Only these users in your identity provider can sign in.": "仅允许身份提供方中所列用户登录。",
+  "Any user can sign in.": "允许任意用户登录。",
+  "Matches <user>@{domain}": "匹配邮箱 <用户>@{domain}",
+  "Only the remaining domains can sign in. If none are left, every domain can.":
+    "移除后仅允许剩余域名的用户登录。列表为空时，允许任意域名。",
+  "Only the remaining groups can sign in. If none are left, every group can.":
+    "移除后仅允许剩余用户组的成员登录。列表为空时，允许任意用户组。",
+  "Only the remaining users can sign in. If none are left, every user can.":
+    "移除后仅允许剩余用户登录。列表为空时，允许任意用户。",
+  "Delete {name}?": "确定删除 {name}？",
+  "Rename {name}": "重命名 {name}",
+  "Remove {name}?": "确定移除 {name}？",
+  "Expire {name}?": "确定使 {name} 过期？",
+  "Change owner of {name}": "更改 {name} 的所有者",
+  "Tags for {name}": "{name} 的标签",
+  "Groups for {name}": "{name} 的用户组",
+  "Approve {route}": "批准 {route}",
+  "Link a Headscale user to {name}": "为 {name} 关联 Headscale 用户",
+  "{name} (current)": "{name}（当前）",
+  "Change role for {name}": "更改 {name} 的角色",
+  "Transfer ownership to {name}?": "确定将所有权转移给 {name}？",
+  "{name} becomes the owner of this Headplane instance and you become an Admin. Only the new owner can transfer it back.":
+    "{name} 将成为此 Headplane 实例的所有者，你的角色将变为管理员。之后只有新所有者可以转回所有权。",
+  "The user is listed under Unlinked Headscale Users until they sign in through your OIDC provider, which links them to a Headplane account.":
+    "此用户会先列在“未关联的 Headscale 用户”中，通过 OIDC 登录后会关联到 Headplane 账号。",
+  "The user is listed under Unlinked Headscale Users until they sign in, which links them to a Headplane account.":
+    "此用户会先列在“未关联的 Headscale 用户”中，登录后会关联到 Headplane 账号。",
+  "Groups live in the ACL policy, so saving rewrites its":
+    "用户组保存在 ACL 策略中，保存时会重写其中的",
+  "section.": "字段。",
+  "The machine stays signed in until you expire or remove it.":
+    "设备将持续保持登录，直到你手动使其过期或移除。",
+  "The machine has to sign in again in {days} days, when its key expires.":
+    "设备密钥将在 {days} 天后过期，届时需要重新登录。",
+  "Disable key expiry for {name}?": "确定禁用 {name} 的密钥过期？",
+  "Enable key expiry for {name}?": "确定启用 {name} 的密钥过期？",
+  "Remove search domain {domain}?": "确定移除搜索域 {domain}？",
+  "Remove nameserver {server}?": "确定移除 DNS 服务器 {server}？",
+  "Devices stop using this nameserver for {domain}.": "设备将不再使用此 DNS 服务器解析 {domain}。",
+  "Devices stop using this nameserver for queries outside the tailnet.":
+    "设备将不再使用此 DNS 服务器解析网络外的域名。",
+  "Remove the {type} record for {name}?": "确定移除 {name} 的 {type} 记录？",
+  "Update rule": "更新规则",
+  "Add rule": "添加规则",
+  "Edit access rule": "编辑访问规则",
+  "New access rule": "新建访问规则",
+  "Add approvers": "添加审批对象",
+  "Update approvers": "更新审批对象",
+  "New auto approver": "新建自动审批",
+  "Edit auto approver": "编辑自动审批",
+  "Update grant": "更新授权规则",
+  "Add grant": "添加授权规则",
+  "Edit grant": "编辑授权规则",
+  "New grant": "新建授权规则",
+  "Update host": "更新主机别名",
+  "Add host": "添加主机别名",
+  "Edit host {name}": "编辑主机别名 {name}",
+  "New host": "新建主机别名",
+  "Edit SSH rule": "编辑 SSH 规则",
+  "New SSH rule": "新建 SSH 规则",
+  "Ports and protocols, for example tcp:443 or * for everything. Use one port or range per entry, so tcp:80 and tcp:443 instead of tcp:80,443.":
+    "端口与协议，例如 tcp:443 或表示全部流量的 *。每项仅填写一个端口或范围，例如分开填写 tcp:80 和 tcp:443。",
+  "Ports and protocols, for example tcp:443 or * for everything.":
+    "端口与协议，例如 tcp:443 或表示全部流量的 *。",
+  "Never expires": "永不过期",
+  "OS hostname": "操作系统主机名",
+  OS: "操作系统",
+  "Key expiry": "密钥过期时间",
+  "Node key": "节点公钥",
+  "Short name": "短名称",
+  FQDN: "完整域名",
+  "DERP region": "DERP 区域",
+  UDP: "UDP",
+  IPv6: "IPv6",
+  "Hair pinning": "NAT 回环",
+  "Mapping varies by destination": "映射随目标变化",
+  "Copied to clipboard": "已复制到剪贴板",
+  "Copy failed. Please copy the text manually.": "复制失败，请手动复制文本。",
+  "Copied {name}": "已复制{name}",
+  Add: "添加",
+  Edit: "编辑",
+  Remove: "移除",
+  Dismiss: "关闭提示",
+  "Click to copy": "点击复制",
+  "Clear filter": "清除筛选",
+  Decrement: "减少",
+  Increment: "增加",
+  Address: "地址",
+  Type: "类型",
+  Manage: "管理",
+  Enable: "启用",
+  Disable: "禁用",
+  Enabled: "已启用",
+  Disabled: "已禁用",
+  Yes: "是",
+  No: "否",
+  Username: "用户名",
+  "Display name": "显示名称",
+  Email: "邮箱",
+  "Add user": "添加用户",
+  "Create user": "创建用户",
+  "Create a Headscale user": "创建 Headscale 用户",
+  "Edit groups": "编辑用户组",
+  "Change role": "更改角色",
+  "Change linked user": "更改关联用户",
+  "Link Headscale user": "关联 Headscale 用户",
+  "Link user": "关联用户",
+  "Headscale user": "Headscale 用户",
+  "Select a Headscale user": "选择 Headscale 用户",
+  "Transfer ownership": "转移所有权",
+  "Save groups": "保存用户组",
+  Groups: "用户组",
+  "This user isn't in any group": "此用户尚未加入任何用户组",
+  "The linked Headscale user decides which machines they can manage and enables self-service features.":
+    "关联的 Headscale 用户决定此账号可以管理哪些设备，并启用自助服务功能。",
+  "Every Headscale user is already linked to another account.":
+    "所有 Headscale 用户都已关联其他账号。",
+  "ACL policies that refer to the old username aren't updated.":
+    "引用旧用户名的 ACL 策略不会自动更新。",
+  "Deleted users can't be recovered.": "用户删除后无法恢复。",
+  "Deleted users can't be recovered. They sign in through your OIDC provider, so signing in again recreates them.":
+    "用户删除后无法恢复。此操作只移除网络用户；如果注册账号仍然存在，再次通过 OIDC 登录会重新创建网络用户。",
+  "This user still owns machines. Remove them or change their owner first.":
+    "此用户名下仍有设备，请先移除设备或更改设备所有者。",
+  "Roles decide what the user can access in Headplane.":
+    "角色决定用户可以在 Headplane 中访问的功能。",
+  "Can view the admin console, manage network, machine, and user settings.":
+    "可以访问管理控制台，并管理网络、设备和用户设置。",
+  "Can view the admin console and manage ACLs and network settings. Cannot manage machines or users.":
+    "可以访问管理控制台，管理 ACL 和网络设置，不能管理设备和用户。",
+  "Can view the admin console and manage machines and users. Cannot manage ACLs or network settings.":
+    "可以访问管理控制台，管理设备和用户，不能管理 ACL 和网络设置。",
+  "Can view the admin console.": "可以查看管理控制台。",
+  "Can view machines, users, and generate their own auth keys.":
+    "可以查看设备和用户，并生成自己的认证密钥。",
+  "Cannot view the admin console.": "不能访问管理控制台。",
+  "No description available.": "暂无说明。",
+  "Your policy has comments. Saving here rewrites the policy and drops them.":
+    "策略中包含注释。在此保存会重写策略并移除注释。",
+  "Edit machine name": "修改设备名称",
+  "key expiry": "密钥过期",
+  "Enable key expiry": "启用密钥过期",
+  "Disable key expiry": "禁用密钥过期",
+  "Edit route settings": "编辑路由设置",
+  "Edit ACL tags": "编辑 ACL 标签",
+  "Change owner": "更改所有者",
+  Owner: "所有者",
+  Expire: "使其过期",
+  "The machine is removed from your tailnet. To add it back, sign in to your tailnet from the device again.":
+    "设备将从你的网络中移除。如需重新加入，请在该设备上再次登录此网络。",
+  "The machine disconnects from your tailnet until someone signs in on it again.":
+    "设备将断开与网络的连接，直到有人在该设备上重新登录。",
+  "The owner is the user the machine belongs to.": "所有者是此设备所属的用户。",
+  "Select a user": "选择用户",
+  "Run this on the device, then paste the key it prints.":
+    "在设备上运行此命令，然后粘贴输出的密钥。",
+  Register: "注册",
+  "Register a machine": "注册设备",
+  "The registration URL or the full hskey-authreq-... key.":
+    "填写注册链接或完整的 hskey-authreq-... 密钥。",
+  "Machine key": "设备密钥",
+  "Add machine": "添加设备",
+  "Register machine key": "使用设备密钥注册",
+  "Create auth key": "创建认证密钥",
+  "This name is shown in the admin panel, in Tailscale clients, and used when generating MagicDNS names.":
+    "此名称显示在管理控制台和 Tailscale 客户端中，并用于生成 MagicDNS 名称。",
+  "Machine name": "设备名称",
+  "Reachable at": "可通过以下地址访问：",
+  "Will be reachable at": "修改后可通过以下地址访问：",
+  ", and": "，而",
+  "will stop resolving.": "将停止解析。",
+  "Routes for": "设备路由：",
+  "Subnet routes": "子网路由",
+  "Reach devices that can't run Tailscale through IP ranges this machine advertises.":
+    "通过此设备通告的 IP 网段，访问无法运行 Tailscale 的设备。",
+  "This machine doesn't advertise any routes": "此设备尚未通告任何路由",
+  "Exit node": "出口节点",
+  "Let devices send their internet traffic through this machine.":
+    "允许其他设备通过此设备转发互联网流量。",
+  "This machine isn't advertised as an exit node": "此设备尚未通告为出口节点",
+  "Use as exit node": "用作出口节点",
+  "Tags let your access control policy refer to machines by role.":
+    "标签让访问控制策略可以按角色引用设备。",
+  "Save tags": "保存标签",
+  "No tags on this machine": "此设备尚无标签",
+  Tags: "标签",
+  "declared under": "在以下字段中声明：",
+  ", so no rule will match": "，因此没有规则能够匹配",
+  ". Declare": "。请声明",
+  in: "，位置：",
+  "Access Control": "访问控制",
+  Breadcrumb: "当前位置",
+  "Edit routes": "编辑路由",
+  "Expose subnets or route all traffic through this machine.": "通过此设备访问子网或转发全部流量。",
+  Routing: "路由",
+  "Traffic to these routes is sent through this machine.": "发往这些路由的流量将通过此设备转发。",
+  "This machine advertises these routes, but they must be approved before traffic is sent to them.":
+    "此设备已通告这些路由，需要批准后才会向其转发流量。",
+  "Whether this machine can route all internet traffic for your tailnet.":
+    "此设备是否可以为网络中的设备转发全部互联网流量。",
+  "Who owns this machine and what it runs.": "此设备的所有者及运行环境。",
+  Machine: "设备",
+  "Published by the machine's operating system and used as the default machine name.":
+    "由设备操作系统提供，用作默认设备名称。",
+  "Used to refer to this machine in the Headscale API.": "用于在 Headscale API 中引用此设备。",
+  "Public key which uniquely identifies this machine.": "用于唯一标识此设备的公钥。",
+  "How other machines in your tailnet reach this one.": "网络中的其他设备如何访问此设备。",
+  "This machine's IPv4 address within your tailnet.": "此设备在网络内的 IPv4 地址。",
+  "This machine's IPv6 address within your tailnet. IPv6 works inside the tailnet even if your ISP does not support it.":
+    "此设备在网络内的 IPv6 地址。即使互联网服务商不支持 IPv6，也可以在网络内使用。",
+  "Machines in your tailnet can reach this one by this name.":
+    "网络中的设备可以通过此名称访问本设备。",
+  "The fully qualified MagicDNS name for this machine.": "此设备完整的 MagicDNS 域名。",
+  "What the machine reported about its network. Useful when debugging connections.":
+    "设备上报的网络信息，可用于排查连接问题。",
+  Connectivity: "连接状态",
+  "Whether the machine is behind a difficult NAT that changes its IP address depending on the destination.":
+    "设备是否位于会根据目标地址改变映射地址的复杂 NAT 之后。",
+  "Whether the machine needs to traverse NATs with hairpinning.":
+    "设备是否需要通过 NAT 回环进行通信。",
+  "This machine is acting as an exit node.": "此设备正在用作出口节点。",
+  'This machine is requesting to be used as an exit node. Review it from "Edit route settings" in the machine\'s menu.':
+    "此设备正在申请成为出口节点，请在设备菜单的“编辑路由设置”中审批。",
+  "This machine advertises subnet routes.": "此设备已通告子网路由。",
+  'This machine has subnet routes waiting for approval. Review them from "Edit route settings" in the machine\'s menu.':
+    "此设备有待批准的子网路由，请在设备菜单的“编辑路由设置”中审批。",
+  "Devices stop trying this suffix on short names.": "设备将不再尝试使用此后缀解析短名称。",
+  "To edit records here, give Headplane write access to the file at":
+    "如需在此编辑记录，请授予 Headplane 对以下配置指定文件的写入权限：",
+  "To edit records here, move them from": "如需在此编辑记录，请将记录从",
+  "into a JSON file set as": "移入 JSON 文件，并将文件路径配置为",
+  "Devices stop resolving this name to the record's address.":
+    "设备将不再把此域名解析到该记录中的地址。",
+  "Devices may misbehave until they pick up the new name.":
+    "设备获取新名称前，部分功能可能暂时异常。",
+  "Rename tailnet": "重命名网络",
+  "Tailnet name": "网络名称",
+  "Devices try this suffix when resolving a short name.": "设备解析短名称时会尝试使用此后缀。",
+  "Add domain": "添加域名",
+  "Add search domain": "添加搜索域",
+  Domain: "域名",
+  "Add nameserver": "添加 DNS 服务器",
+  "Use this IPv4 or IPv6 address to resolve names.":
+    "使用此 IPv4 或 IPv6 地址提供的 DNS 服务解析名称。",
+  Nameserver: "DNS 服务器",
+  "Split DNS. Only Tailscale 1.8 and later use this nameserver.":
+    "分流 DNS，仅 Tailscale 1.8 及以上版本使用此服务器。",
+  "Restrict to domain": "仅用于指定域名",
+  "Only queries for this domain and its subdomains use the nameserver.":
+    "仅对此域名及其子域名的查询使用此 DNS 服务器。",
+  "Point a domain at an IP address for every device on the tailnet.":
+    "为网络中的所有设备添加域名到 IP 地址的映射。",
+  "Add record": "添加记录",
+  "Add DNS record": "添加 DNS 记录",
+  "IP address": "IP 地址",
+  "Failed to load the editor.": "无法加载编辑器。",
+  Format: "格式化",
+  "No changes": "没有更改",
+  "Loading editor…": "正在加载编辑器…",
+  "Rules are evaluated top to bottom. Traffic is denied unless a rule allows it.":
+    "规则按从上到下的顺序匹配，没有规则明确允许的流量将被拒绝。",
+  "Access rules": "访问规则",
+  "Grants allow traffic like access rules, with ports and protocols set separately. Headscale combines them with the access rules.":
+    "授权规则允许单独设置端口和协议。Headscale 会将它们与访问规则合并。",
+  Grants: "授权规则",
+  on: "端口与协议：",
+  via: "经由",
+  "Control which nodes can be reached over Tailscale SSH and as which local user.":
+    "控制哪些设备可以通过 Tailscale SSH 访问，以及允许登录的本地用户。",
+  "SSH rules": "SSH 规则",
+  as: "登录身份：",
+  "Named IP addresses and CIDR ranges that can be referenced from rules.":
+    "为 IP 地址和 CIDR 网段命名，以便在规则中引用。",
+  Hosts: "主机别名",
+  "Subnet routes and exit nodes advertised by these users, groups or tags are approved automatically.":
+    "自动批准这些用户、用户组或标签所通告的子网路由和出口节点。",
+  "Auto approvers": "自动审批",
+  "Groups bundle users together so rules can refer to a team instead of individual accounts. Membership is stored in the policy, not in Headscale.":
+    "用户组将用户归类，便于规则引用整个团队。成员关系保存在策略中。",
+  "No members": "暂无成员",
+  "Tags identify machines by role instead of by owner. A tag must be declared here before it can be assigned to a node — see the":
+    "标签按角色标识设备。分配标签前，需要先在此声明，详见",
+  "Tailscale tag documentation": "Tailscale 标签文档",
+  "No owners": "暂无所有者",
+  "Access rules allow traffic from a set of sources to a set of destinations. Destinations must include a port, for example":
+    "访问规则允许一组来源访问一组目标。目标必须包含端口，例如",
+  ". If you leave the port out,": "。如果省略端口，将自动添加",
+  "is added for you. See the": "。完整语法请参阅",
+  "for the full syntax.": "。",
+  "Groups, tags, hosts, users or autogroups allowed to initiate the connection.":
+    "允许发起连接的用户组、标签、主机、用户或自动用户组。",
+  "No sources yet": "尚未添加来源",
+  Sources: "来源",
+  "Where the traffic is allowed to go. A destination without a port becomes :* (all ports).":
+    "允许流量到达的目标。省略端口时会自动补充 :*，表示所有端口。",
+  "No destinations yet": "尚未添加目标",
+  Destinations: "目标",
+  "Optional. Restricts the rule to a single protocol (tcp, udp, icmp, ...).":
+    "可选，将规则限制为一种协议，例如 tcp、udp 或 icmp。",
+  Protocol: "协议",
+  "Routes and exit nodes advertised by these users, groups or tags are approved without manual review.":
+    "自动批准这些用户、用户组或标签所通告的路由和出口节点，无需人工审批。",
+  Approve: "批准",
+  Route: "路由",
+  "Users, groups or tags whose machines are approved.": "允许自动审批设备的用户、用户组或标签。",
+  "No approvers yet": "尚未添加审批对象",
+  Approvers: "审批对象",
+  "Grants allow traffic from a set of sources to a set of destinations. Unlike access rules, ports and protocols are set separately from the destination. App capabilities are kept but can only be edited in the file. See the":
+    "授权规则允许来源访问目标，端口和协议与目标分开设置。应用能力配置会保留，但需要在文件中编辑。详见",
+  "Tailscale grants guide": "Tailscale 授权规则指南",
+  "Where the traffic is allowed to go, without a port.": "允许流量到达的目标，不包含端口。",
+  "No ports yet": "尚未添加端口",
+  "Ports and protocols": "端口与协议",
+  "Optional. Tags of the subnet routers or exit nodes the traffic must go through. For exit nodes, use autogroup:internet as the destination. Only tags are allowed.":
+    "可选，流量必须经过的子网路由器或出口节点的标签。使用出口节点时，目标填写 autogroup:internet。此处仅支持标签。",
+  "Traffic is not routed through a specific node": "不指定流量必须经过的设备",
+  Via: "经由设备",
+  "Hosts give a name to an IP address or CIDR range so it can be referenced from rules.":
+    "为 IP 地址或 CIDR 网段设置别名，以便在规则中引用。",
+  "SSH rules control Tailscale SSH access between nodes. Read the":
+    "SSH 规则控制设备之间的 Tailscale SSH 访问。检查模式的详情请参阅",
+  "Tailscale SSH documentation": "Tailscale SSH 文档",
+  "for details about check mode.": "。",
+  Action: "操作",
+  "Who is allowed to open the SSH session.": "允许发起 SSH 会话的身份。",
+  "The nodes that accept the SSH session.": "允许接受 SSH 会话的设备。",
+  "The local Unix users that may be logged into.": "允许登录的本地 Unix 用户。",
+  "No SSH users yet": "尚未添加 SSH 用户",
+  "SSH users": "SSH 用户",
+  "How long a check-mode session stays valid, for example 12h.":
+    "检查模式会话的有效时长，例如 12h。",
+  "Check period": "检查周期",
+  "Syncs each machine's Tailscale version, OS, and connectivity from your tailnet.":
+    "同步网络中各设备的 Tailscale 版本、操作系统和连接信息。",
+  Agent: "代理服务",
+  "The agent is off": "代理服务已关闭",
+  Unavailable: "不可用",
+  "Sync now": "立即同步",
+  "Waiting for approval": "等待批准",
+  "Headplane tries to approve the agent's tailnet registration automatically. If that doesn't work,":
+    "Headplane 会尝试自动批准代理服务加入网络。如果未成功，请",
+  "approve it here": "在此批准",
+  "Sync failed": "同步失败",
+  Sync: "同步",
+  "Last synced": "上次同步",
+  "· every": "· 同步间隔：",
+  Process: "进程",
+  Started: "启动时间",
+  "Not running": "未运行",
+  "The node the agent uses to reach the rest of your tailnet.":
+    "代理服务用于访问网络中其他设备的节点。",
+  "Agent machine": "代理设备",
+  "Tailscale version": "Tailscale 版本",
+  "The agent hasn't joined the tailnet yet.": "代理服务尚未加入网络。",
+  "Machines missing from the last sync keep the details from the last time they were seen, usually because they're offline.":
+    "上次同步中未出现的设备会保留最近一次在线时的信息，这通常表示设备已离线。",
+  Coverage: "同步覆盖",
+  of: "/",
+  "in the last sync": "（上次同步）",
+  "Devices sign in with the key instead of an interactive login.":
+    "设备可以使用此密钥登录，无需交互式验证。",
+  "Create key": "创建密钥",
+  "Auth key created": "认证密钥已创建",
+  "Copy the key now. It won't be shown again.": "请立即复制密钥，关闭后将无法再次查看。",
+  "Register a device with it:": "使用以下命令注册设备：",
+  "Your account isn't linked to a Headscale user yet, so you can't create a key.":
+    "你的账号尚未关联 Headscale 用户，暂时无法创建密钥。",
+  "The key belongs to its tags instead of a user.": "此密钥归属于标签。",
+  "Tag-only key": "标签密钥",
+  "You can only create keys for your own user.": "你只能为自己的用户创建密钥。",
+  "Devices that sign in with the key belong to this user.": "使用此密钥登录的设备将归属于此用户。",
+  "Expires after (days)": "有效期（天）",
+  "The key can sign in more than one device.": "此密钥可以供多台设备使用。",
+  Reusable: "可重复使用",
+  "Devices are removed once they go offline.": "设备离线后会自动移除。",
+  Ephemeral: "临时设备",
+  "The key stops working for new devices right away.": "此密钥将立即无法用于新设备注册。",
+  "Expire key": "使密钥过期",
+  "Expire this auth key?": "确定使此认证密钥过期？",
+  "Limit who can sign in through OIDC. Headscale and Headplane both enforce these.":
+    "限制可以通过 OIDC 登录的用户。Headscale 和 Headplane 都会执行这些限制。",
+  "Sign-in restrictions": "登录限制",
+  "Changes are saved to the Headscale configuration but only take effect once Headscale restarts. Set up an":
+    "更改会保存到 Headscale 配置中，重启后生效。如需自动重启，请配置",
+  integration: "集成",
+  "to restart it automatically.": "。",
+};

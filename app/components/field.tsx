@@ -1,9 +1,10 @@
 import { Field as BaseField } from "@base-ui/react/field";
 import { Info } from "lucide-react";
-import type React from "react";
+import React, { useCallback } from "react";
 
 import Tooltip from "~/components/tooltip";
 import cn from "~/utils/cn";
+import { useI18n } from "~/utils/i18n";
 
 export const controlClass = cn(
   "h-8 w-full rounded-md border border-line-strong bg-surface text-sm text-fg",
@@ -41,36 +42,49 @@ export default function Field({
   className,
   children,
 }: FieldProps) {
+  const { text: ui } = useI18n();
+  const localizedValidate = useCallback(
+    (value: unknown) => {
+      const error = validate?.(value);
+      return error ? ui(error) : null;
+    },
+    [validate, ui],
+  );
   return (
     <BaseField.Root
       className={cn("group flex w-full flex-col gap-1.5", className)}
       disabled={disabled}
       invalid={invalid}
       name={name}
-      validate={validate}
+      validate={validate ? localizedValidate : undefined}
     >
       {labelTooltip ? (
         <div className={cn("flex items-center gap-1", labelHidden && "sr-only")}>
-          <BaseField.Label className="text-fg text-sm font-medium">{label}</BaseField.Label>
-          <Tooltip className="w-72" content={labelTooltip}>
+          <BaseField.Label className="text-fg text-sm font-medium">{ui(label)}</BaseField.Label>
+          <Tooltip
+            className="w-72"
+            content={typeof labelTooltip === "string" ? ui(labelTooltip) : labelTooltip}
+          >
             <Info
-              aria-label={`About ${label}`}
+              aria-label={ui("About {label}", { label: ui(label) })}
               className="text-muted hover:text-fg size-3.5 transition-colors"
             />
           </Tooltip>
         </div>
       ) : (
         <BaseField.Label className={cn("text-sm font-medium text-fg", labelHidden && "sr-only")}>
-          {label}
+          {ui(label)}
         </BaseField.Label>
       )}
       {children}
       {description && (
-        <BaseField.Description className="text-muted text-xs">{description}</BaseField.Description>
+        <BaseField.Description className="text-muted text-xs">
+          {typeof description === "string" ? ui(description) : description}
+        </BaseField.Description>
       )}
       <BaseField.Error
         className="text-bad text-xs"
-        {...(errorMessage && { match: invalid, children: errorMessage })}
+        {...(errorMessage && { match: invalid, children: ui(errorMessage) })}
       />
     </BaseField.Root>
   );

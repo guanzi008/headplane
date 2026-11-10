@@ -15,6 +15,7 @@ import {
   requestApiContext,
 } from "~/server/context";
 import { autoLink } from "~/server/web/link";
+import { useI18n } from "~/utils/i18n";
 
 import type { Route } from "./+types/page";
 import { isSSHError, SSHError, sshErrors } from "./errors";
@@ -120,6 +121,8 @@ function generateHostname(username: string) {
 }
 
 export default function Page({ loaderData }: Route.ComponentProps) {
+  const { text: ui } = useI18n();
+
   const { hostname, username, offline, node, compatibilityWarning } = loaderData;
   const wasmUrl = useHref("/hp_ssh.wasm");
   preload(wasmUrl, { as: "fetch", type: "application/wasm", crossOrigin: "anonymous" });
@@ -133,7 +136,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           title={`${hostname} is offline`}
         >
           <Button onClick={() => window.location.reload()} variant="primary">
-            Try again
+            {ui("Try again")}
           </Button>
         </Shell>
       </>

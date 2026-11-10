@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { getLocale, translate } from "~/utils/i18n";
+import { getLocale, translate, translateText } from "~/utils/i18n";
 
 function request(url: string, headers?: Record<string, string>) {
   return new Request(url, { headers });
@@ -54,5 +54,14 @@ describe("translation", () => {
   test("interpolates named values without replacing unknown placeholders", () => {
     expect(translate("en", "machines.count", { count: 3 })).toBe("3 machines");
     expect(translate("zh-CN", "machines.count", { count: 3 })).toBe("3 台设备");
+  });
+
+  test("interpolates dialog values once and preserves unknown diagnostic text", () => {
+    expect(translateText("zh-CN", "Delete {name}?", { name: "node-{name}<test>" })).toBe(
+      "确定删除 node-{name}<test>？",
+    );
+    const diagnostic = "HEADSCALE_FAILURE: 10.42.0.3:8080";
+    expect(translateText("zh-CN", diagnostic)).toBe(diagnostic);
+    expect(translateText("en", "Delete {name}?", { name: "Alice" })).toBe("Delete Alice?");
   });
 });

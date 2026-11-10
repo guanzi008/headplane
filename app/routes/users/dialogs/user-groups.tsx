@@ -6,6 +6,7 @@ import Code from "~/components/code";
 import Link from "~/components/link";
 import TokenList from "~/components/token-list";
 import { isValidGroupName } from "~/utils/acl-policy";
+import { useI18n } from "~/utils/i18n";
 
 interface UserGroupsProps {
   isOpen: boolean;
@@ -28,6 +29,8 @@ export default function UserGroups({
   availableGroups,
   policyHasComments,
 }: UserGroupsProps) {
+  const { text: ui } = useI18n();
+
   const [selected, setSelected] = useState([...groups]);
   const isUnchanged =
     selected.length === groups.length && selected.every((group) => groups.includes(group));
@@ -36,9 +39,10 @@ export default function UserGroups({
     <ActionDialog
       description={
         <>
-          Groups live in the ACL policy, so saving rewrites its <Code>groups</Code> section.{" "}
+          {ui("Groups live in the ACL policy, so saving rewrites its")} <Code>groups</Code>{" "}
+          {ui("section.")}{" "}
           <Link external styled to="https://tailscale.com/kb/1018/acls">
-            Docs
+            {ui("Docs")}
           </Link>
         </>
       }
@@ -47,15 +51,15 @@ export default function UserGroups({
       isDisabled={isUnchanged}
       onOpenChange={setIsOpen}
       open={isOpen}
-      submitLabel="Save groups"
-      title={`Groups for ${displayName}`}
+      submitLabel={ui("Save groups")}
+      title={ui("Groups for {name}", { name: displayName })}
     >
       {selected.map((group) => (
         <input key={group} name="groups" type="hidden" value={group} />
       ))}
       <TokenList
-        emptyText="This user isn't in any group"
-        label="Groups"
+        emptyText={ui("This user isn't in any group")}
+        label={ui("Groups")}
         onChange={setSelected}
         placeholder="group:example"
         suggestions={availableGroups}
@@ -64,7 +68,7 @@ export default function UserGroups({
       />
       {policyHasComments && (
         <Callout variant="warning">
-          Your policy has comments. Saving here rewrites the policy and drops them.
+          {ui("Your policy has comments. Saving here rewrites the policy and drops them.")}
         </Callout>
       )}
     </ActionDialog>

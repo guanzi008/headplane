@@ -3,6 +3,7 @@ import { Check, Copy } from "lucide-react";
 import { SettingRow } from "~/components/section";
 import cn from "~/utils/cn";
 import { copyToClipboard } from "~/utils/copy";
+import { useI18n } from "~/utils/i18n";
 import toast from "~/utils/toast";
 
 export interface AttributeProps {
@@ -18,11 +19,12 @@ export interface AttributeProps {
 // split on newlines. The copy button has no background or outline because the
 // row clips overflow to truncate, which would cut them off.
 export default function Attribute({ name, value, tooltip, isCopyable, isMono }: AttributeProps) {
+  const { text: ui } = useI18n();
   const lines = value.split("\n");
   const textClass = isMono ? "font-mono text-xs" : undefined;
 
   return (
-    <SettingRow isMultiline={lines.length > 1} label={name} tooltip={tooltip}>
+    <SettingRow isMultiline={lines.length > 1} label={ui(name)} tooltip={tooltip && ui(tooltip)}>
       {isCopyable ? (
         <button
           className={cn(
@@ -33,7 +35,7 @@ export default function Attribute({ name, value, tooltip, isCopyable, isMono }: 
             const svgs = event.currentTarget.querySelectorAll("svg");
             const isCopied = await copyToClipboard(value);
             if (!isCopied) {
-              toast("Copy failed. Please copy the text manually.");
+              toast(ui("Copy failed. Please copy the text manually."));
               return;
             }
 
@@ -41,7 +43,7 @@ export default function Attribute({ name, value, tooltip, isCopyable, isMono }: 
               svg.toggleAttribute("data-copied", true);
             }
 
-            toast(`Copied ${name}`);
+            toast(ui("Copied {name}", { name: ui(name) }));
 
             setTimeout(() => {
               for (const svg of svgs) {

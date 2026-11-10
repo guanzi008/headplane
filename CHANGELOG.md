@@ -11,6 +11,9 @@
 
 ## Changes
 
+- When embedded in Headscale Console, each account now opens its own private network with separate configuration, database and sessions. The account menu links to the account center and shows registered-account management to platform administrators. Network settings reload only that network; platform process settings remain managed by the deployment.
+- Chinese now covers management dialogs for users, machines, DNS, ACL rules, auth keys and sign-in restrictions, as well as shared form controls and notifications. Dialog titles preserve names and addresses, and the language switch continues to support English.
+
 - Headplane now works with Headscale 0.30. Expiry changes use its JSON request body, RFC 7807 errors are shown with Headscale's reason, auth keys that never expire display as **Never**, file-mode policies stay read-only, and grants keep one port range per entry.
 - Headplane can be served under a path other than `/admin` by setting `server.base_path`, without building it from source (closes [#637](https://github.com/tale/headplane/issues/637)).
 - Headplane has a new color palette built from its logo: warm greys, black primary buttons, and a muted blue that marks links, focus, and the current page. Dark mode now separates the page, menus, and dialogs by shade so overlays stand out, and secondary text is easier to read in both themes (via [#651](https://github.com/tale/headplane/issues/651)).

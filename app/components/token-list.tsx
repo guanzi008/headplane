@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Button from "~/components/button";
 import Input from "~/components/input";
 import { RemoveButton, Row, RowList } from "~/components/section";
+import { useI18n } from "~/utils/i18n";
 
 interface TokenListProps {
   label: string;
@@ -33,6 +34,8 @@ export default function TokenList({
   validate,
   normalize,
 }: TokenListProps) {
+  const { text: ui } = useI18n();
+
   const [draft, setDraft] = useState("");
 
   const prepare = useMemo(
@@ -110,7 +113,7 @@ export default function TokenList({
         />
         <Button disabled={isDisabled || draftIsInvalid} onClick={() => add(draft)} type="button">
           <Plus className="size-4" />
-          Add
+          {ui("Add")}
         </Button>
       </div>
       {available.length > 0 ? (

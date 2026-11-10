@@ -17,6 +17,7 @@ import {
 import { nodesResource } from "~/server/headscale/live-store";
 import { Capabilities } from "~/server/web/roles";
 import { getTSVersion } from "~/utils/host-info";
+import { useI18n } from "~/utils/i18n";
 import { formatTimeDelta } from "~/utils/time";
 
 import type { Route } from "./+types/agent";
@@ -110,12 +111,14 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function Page({ loaderData }: Route.ComponentProps) {
+  const { text: ui } = useI18n();
+
   const fetcher = useFetcher<typeof action>();
   const description = (
     <>
-      Syncs each machine's Tailscale version, OS, and connectivity from your tailnet.{" "}
+      {ui("Syncs each machine's Tailscale version, OS, and connectivity from your tailnet.")}{" "}
       <Link external styled to="https://headplane.net/features/agent">
-        Docs
+        {ui("Docs")}
       </Link>
     </>
   );
@@ -123,14 +126,17 @@ export default function Page({ loaderData }: Route.ComponentProps) {
   if (!loaderData.enabled) {
     return (
       <>
-        <PageHeader description={description} isSubpage title="Agent" />
-        <Callout title="The agent is off">{loaderData.reason}.</Callout>
+        <PageHeader description={description} isSubpage title={ui("Agent")} />
+        <Callout title={ui("The agent is off")}>
+          {loaderData.reason}
+          {ui(".")}
+        </Callout>
       </>
     );
   }
 
   const { self, missing, machineCount, isHeadscaleDown, hasMachines } = loaderData;
-  const unavailable = <p className="text-muted py-2.5 text-sm">Unavailable</p>;
+  const unavailable = <p className="text-muted py-2.5 text-sm">{ui("Unavailable")}</p>;
   const isPending = !loaderData.syncedAt && Boolean(loaderData.authUrl);
   const hasError = Boolean(loaderData.error);
   const intervalMinutes = Math.max(1, Math.round(loaderData.intervalMs / 60_000));
@@ -141,32 +147,33 @@ export default function Page({ loaderData }: Route.ComponentProps) {
         actions={
           <fetcher.Form method="post">
             <Button pending={fetcher.state !== "idle"} type="submit">
-              Sync now
+              {ui("Sync now")}
             </Button>
           </fetcher.Form>
         }
         description={description}
         isSubpage
-        title="Agent"
+        title={ui("Agent")}
       />
       {isPending && loaderData.authUrl && (
-        <Callout className="mb-6" title="Waiting for approval" variant="warning">
-          Headplane tries to approve the agent's tailnet registration automatically. If that doesn't
-          work,{" "}
+        <Callout className="mb-6" title={ui("Waiting for approval")} variant="warning">
+          {ui(
+            "Headplane tries to approve the agent's tailnet registration automatically. If that doesn't work,",
+          )}{" "}
           <Link external styled to={loaderData.authUrl}>
-            approve it here
+            {ui("approve it here")}
           </Link>
-          .
+          {ui(".")}
         </Callout>
       )}
       {loaderData.error && !isHeadscaleDown && (
-        <Callout className="mb-6" title="Sync failed" variant="error">
+        <Callout className="mb-6" title={ui("Sync failed")} variant="error">
           {loaderData.error}
         </Callout>
       )}
-      <Section title="Sync">
+      <Section title={ui("Sync")}>
         <SettingList>
-          <SettingRow label="Status">
+          <SettingRow label={ui("Status")}>
             <span className="flex items-center gap-2">
               <StatusCircle isExpired={hasError} isOnline={!hasError && !isPending} />
               {hasError
@@ -176,42 +183,42 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                   : "Healthy"}
             </span>
           </SettingRow>
-          <SettingRow label="Last synced">
+          <SettingRow label={ui("Last synced")}>
             {loaderData.syncedAt ? (
               <span suppressHydrationWarning title={new Date(loaderData.syncedAt).toLocaleString()}>
                 {formatTimeDelta(new Date(loaderData.syncedAt))}
               </span>
             ) : (
-              <span className="text-muted">Never</span>
+              <span className="text-muted">{ui("Never")}</span>
             )}
             <span className="text-muted">
               {" "}
-              · every {intervalMinutes} {intervalMinutes === 1 ? "minute" : "minutes"}
+              {ui("· every")} {intervalMinutes} {intervalMinutes === 1 ? "minute" : "minutes"}
             </span>
           </SettingRow>
-          <SettingRow label="Process">
+          <SettingRow label={ui("Process")}>
             {loaderData.startedAt ? (
               <span
                 suppressHydrationWarning
                 title={new Date(loaderData.startedAt).toLocaleString()}
               >
-                Started {formatTimeDelta(new Date(loaderData.startedAt))}
+                {ui("Started")} {formatTimeDelta(new Date(loaderData.startedAt))}
               </span>
             ) : (
-              <span className="text-muted">Not running</span>
+              <span className="text-muted">{ui("Not running")}</span>
             )}
           </SettingRow>
         </SettingList>
       </Section>
       <Section
-        description="The node the agent uses to reach the rest of your tailnet."
-        title="Agent machine"
+        description={ui("The node the agent uses to reach the rest of your tailnet.")}
+        title={ui("Agent machine")}
       >
         {!hasMachines ? (
           unavailable
         ) : self ? (
           <SettingList>
-            <SettingRow label="Machine">
+            <SettingRow label={ui("Machine")}>
               <span className="flex items-center gap-2">
                 <StatusCircle isOnline={self.isOnline} />
                 <Link styled to={`/machines/${self.id}`}>
@@ -219,27 +226,31 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                 </Link>
               </span>
             </SettingRow>
-            <SettingRow label="Address">
+            <SettingRow label={ui("Address")}>
               <span className="font-mono text-xs">{self.addresses[0] ?? "None"}</span>
             </SettingRow>
-            <SettingRow label="Tailscale version">
+            <SettingRow label={ui("Tailscale version")}>
               <span className="font-mono text-xs">{self.version ?? "Unknown"}</span>
             </SettingRow>
           </SettingList>
         ) : (
-          <p className="text-muted py-2.5 text-sm">The agent hasn't joined the tailnet yet.</p>
+          <p className="text-muted py-2.5 text-sm">
+            {ui("The agent hasn't joined the tailnet yet.")}
+          </p>
         )}
       </Section>
       <Section
-        description="Machines missing from the last sync keep the details from the last time they were seen, usually because they're offline."
-        title="Coverage"
+        description={ui(
+          "Machines missing from the last sync keep the details from the last time they were seen, usually because they're offline.",
+        )}
+        title={ui("Coverage")}
       >
         {!hasMachines ? (
           unavailable
         ) : (
           <p className="py-2.5 text-sm">
-            {machineCount - missing.length} of {machineCount}{" "}
-            {machineCount === 1 ? "machine" : "machines"} in the last sync
+            {machineCount - missing.length} {ui("of")} {machineCount}{" "}
+            {machineCount === 1 ? "machine" : "machines"} {ui("in the last sync")}
           </p>
         )}
         {missing.length > 0 && (

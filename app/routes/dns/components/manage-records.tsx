@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function ManageRecords({ records, hasRecordsFile, isDisabled, isReadOnly }: Props) {
-  const { t } = useI18n();
+  const { text: ui, t } = useI18n();
   const isLocked = isDisabled || isReadOnly;
 
   return (
@@ -29,15 +29,17 @@ export default function ManageRecords({ records, hasRecordsFile, isDisabled, isR
           {!isDisabled && isReadOnly && hasRecordsFile && (
             <>
               {" "}
-              To edit records here, give Headplane write access to the file at{" "}
-              <Code>dns.extra_records_path</Code>.
+              {ui("To edit records here, give Headplane write access to the file at")}{" "}
+              <Code>dns.extra_records_path</Code>
+              {ui(".")}
             </>
           )}
           {!isDisabled && isReadOnly && !hasRecordsFile && (
             <>
               {" "}
-              To edit records here, move them from <Code>dns.extra_records</Code> into a JSON file
-              set as <Code>dns.extra_records_path</Code>.
+              {ui("To edit records here, move them from")} <Code>dns.extra_records</Code>{" "}
+              {ui("into a JSON file set as")} <Code>dns.extra_records_path</Code>
+              {ui(".")}
             </>
           )}
         </>
@@ -52,12 +54,15 @@ export default function ManageRecords({ records, hasRecordsFile, isDisabled, isR
             <Row
               action={
                 <ActionDialog
-                  description="Devices stop resolving this name to the record's address."
+                  description={ui("Devices stop resolving this name to the record's address.")}
                   fields={{ name: record.name, type: record.type }}
                   intent="remove_record"
                   isDestructive
-                  submitLabel="Remove"
-                  title={`Remove the ${record.type} record for ${record.name}?`}
+                  submitLabel={ui("Remove")}
+                  title={ui("Remove the {type} record for {name}?", {
+                    type: record.type,
+                    name: record.name,
+                  })}
                   trigger={<RemoveButton disabled={isLocked} />}
                 />
               }

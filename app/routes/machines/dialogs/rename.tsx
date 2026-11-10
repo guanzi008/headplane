@@ -5,6 +5,7 @@ import Code from "~/components/code";
 import Input from "~/components/input";
 import type { Machine } from "~/types";
 import { fieldValidator } from "~/utils/form";
+import { useI18n } from "~/utils/i18n";
 
 import { machineName } from "../schemas";
 
@@ -18,23 +19,27 @@ interface RenameProps {
 const validateName = fieldValidator(machineName);
 
 export default function Rename({ machine, magic, isOpen, setIsOpen }: RenameProps) {
+  const { text: ui } = useI18n();
+
   const [name, setName] = useState(machine.givenName);
   const isValid = validateName(name) === null;
 
   return (
     <ActionDialog
-      description="This name is shown in the admin panel, in Tailscale clients, and used when generating MagicDNS names."
+      description={ui(
+        "This name is shown in the admin panel, in Tailscale clients, and used when generating MagicDNS names.",
+      )}
       fields={{ node_id: machine.id }}
       intent="rename"
       isDisabled={name === machine.givenName}
       onOpenChange={setIsOpen}
       open={isOpen}
-      submitLabel="Rename"
-      title={`Rename ${machine.givenName}`}
+      submitLabel={ui("Rename")}
+      title={ui("Rename {name}", { name: machine.givenName })}
     >
       <Input
         defaultValue={machine.givenName}
-        label="Machine name"
+        label={ui("Machine name")}
         name="name"
         onChange={setName}
         required
@@ -44,12 +49,13 @@ export default function Rename({ machine, magic, isOpen, setIsOpen }: RenameProp
         <p className="text-muted">
           {name === machine.givenName ? (
             <>
-              Reachable at <Code>{machine.givenName}</Code>.
+              {ui("Reachable at")} <Code>{machine.givenName}</Code>
+              {ui(".")}
             </>
           ) : (
             <>
-              Will be reachable at <Code>{name.toLowerCase()}</Code>, and{" "}
-              <Code>{machine.givenName}</Code> will stop resolving.
+              {ui("Will be reachable at")} <Code>{name.toLowerCase()}</Code>
+              {ui(", and")} <Code>{machine.givenName}</Code> {ui("will stop resolving.")}
             </>
           )}
         </p>
