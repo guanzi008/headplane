@@ -41,6 +41,8 @@
 
 ## Fixes
 
+- Address-pool integration tests now build the Headscale fork from source in a dedicated test project. CI supplies the fork checkout, while upstream compatibility tests retain their published version matrix. Tests also verify that clearing pools preserves existing IPv4 traffic and MagicDNS reverse lookups.
+
 - Saving from the Rules or Tags & Groups tabs no longer drops the comma from text like `,}` or `,]` inside a policy value.
 - Signing out now invalidates the Headplane session and returns to the signed-out page instead of leaving the old session active. This also covers OIDC RP-initiated logout through `end_session_endpoint`.
 - Live updates work again right after signing in. Previously the machines list and other pages only refreshed on their own after a full page reload.

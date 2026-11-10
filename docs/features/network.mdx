@@ -54,6 +54,12 @@ If a pool defines only IPv4, IPv6 addresses continue to come from Headscale's
 global IPv6 allocation, and the reverse is also true. Tagged devices are not
 owned by a user and keep using global allocation.
 
+Clearing a pool changes future allocations. Existing devices retain their
+addresses, wildcard ACL access, exact host routes, and MagicDNS reverse
+lookups. Applying tags to an existing device also preserves its addresses;
+new tagged devices use global allocation. New or changed pools are still
+checked against every device address.
+
 The policy permits `10.x`, `172.16/12`, `192.168/16`, and IPv6 ULA addresses.
 These ranges work only when they do not collide with a route the client already
 uses. A remote node address does not override a local subnet route on a client

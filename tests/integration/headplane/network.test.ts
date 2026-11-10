@@ -1,7 +1,10 @@
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, inject, test } from "vitest";
+
+import { networkAction } from "~/routes/network/network-actions";
 
 import { createTailnet, type Tailnet } from "../../harness/tailnet";
 import { waitFor } from "../../harness/wait";
+import { statusOf, type TestApp } from "../../support/app";
 
 function ipv4(addresses: string[]) {
   const address = addresses.find((candidate) => candidate.includes("."));
@@ -17,7 +20,7 @@ describe("custom address pools on a real tailnet", () => {
   let bobIP: string;
 
   beforeAll(async () => {
-    tailnet = await createTailnet();
+    tailnet = await createTailnet({ image: inject("poolHeadscaleImage") });
     const aliceUser = await tailnet.user("network-alice", {
       email: "network-alice@example.com",
     });
@@ -92,6 +95,69 @@ describe("custom address pools on a real tailnet", () => {
       // in-addr.arpa name. Passing the address makes it issue a PTR query.
       const reverse = await alice.exec(["nslookup", bobIP]);
       expect(reverse).toContain("network-bob-node.tailnet.test");
+    });
+  });
+
+  test("clearing pools preserves existing IPv4 traffic and reverse DNS", async () => {
+    await tailnet.setPolicy({
+      acls: [{ action: "accept", src: ["*"], dst: ["*:*"] }],
+    });
+
+    expect((await alice.machine()).ipAddresses).toContain(aliceIP);
+    expect((await bob.machine()).ipAddresses).toContain(bobIP);
+    await waitFor("IPv4 connectivity after clearing the pools", async () => {
+      const output = await alice.exec(["ping", "-c", "1", "-W", "2", bobIP]);
+      expect(output).toMatch(/\b0% packet loss/);
+      const reverse = await alice.exec(["nslookup", bobIP]);
+      expect(reverse).toContain("network-bob-node.tailnet.test");
+    });
+
+    const newNode = await tailnet.node({ name: "network-global-node", user: "network-alice" });
+    expect(ipv4((await newNode.machine()).ipAddresses)).toMatch(/^100\./);
+  });
+
+  describe("address pool permissions", () => {
+    let app: TestApp;
+    let ownerCookie: string;
+    let memberCookie: string;
+
+    beforeAll(async () => {
+      app = await tailnet.headplane();
+      ownerCookie = (await app.signIn("owner")).cookie;
+      const member = await app.signIn("member");
+      memberCookie = member.cookie;
+      const user = await tailnet.user("pool-member", { email: "pool-member@example.com" });
+      await app.ctx.auth.linkHeadscaleUser(member.userId, user.id);
+    });
+
+    function savePool(as: string, pools: string, userId?: string) {
+      return app.call(networkAction, "/network", {
+        as,
+        form: { intent: "save", pools, ...(userId ? { user_id: userId } : {}) },
+      });
+    }
+
+    test("a member can save their own address pool", async () => {
+      expect(statusOf(await savePool(memberCookie, "10.70.0.0/24"))).toBe(200);
+    });
+
+    test("a member cannot target another user's address pool", async () => {
+      const other = await tailnet.user("other-pool-owner");
+      expect(statusOf(await savePool(memberCookie, "10.71.0.0/24", other.id))).toBe(403);
+    });
+
+    test("an owner can save an arbitrary user's address pool", async () => {
+      const target = await tailnet.user("owner-pool-target", {
+        email: "owner-pool-target@example.com",
+      });
+      expect(statusOf(await savePool(ownerCookie, "10.77.0.0/24", target.id))).toBe(200);
+    });
+
+    test("a pool containing another user's node address is rejected", async () => {
+      const user = await tailnet.user("pool-node-owner");
+      const node = await tailnet.node({ name: "pool-conflict", user: user.name });
+      expect((await node.machine()).ipAddresses.some((ip) => ip.startsWith("100.64."))).toBe(true);
+      expect(statusOf(await savePool(memberCookie, "100.64.0.0/24"))).toBe(400);
     });
   });
 });

@@ -85,6 +85,24 @@ integration tests run against the latest one. Set
 `HP_HEADSCALE_VERSIONS=all` (as CI does) or a comma-separated list to run
 others.
 
+### Address-pool tests
+
+The `integration:pools` project tests the Headscale fork's address-pool
+extensions. It builds the sibling `../headscale` checkout into a temporary
+Docker image, so the default integration command tests the current source
+instead of using an upstream image without pool support:
+
+```sh
+pnpm exec vitest run --project integration:pools
+HP_HEADSCALE_SOURCE=/path/to/headscale pnpm exec vitest run --project integration:pools
+```
+
+`HP_HEADSCALE_POOL_IMAGE` selects a prebuilt fork image instead. The other
+integration projects keep their published Headscale version matrix. CI checks
+out the pinned `guanzi008/headscale` commit in `.github/workflows/build.yaml`
+and supplies its path as `HP_HEADSCALE_SOURCE`. Changes spanning both forks
+must land in Headscale before updating that pin in Headplane.
+
 ## Scenarios
 
 A scenario is a seeded tailnet described as data: users, machines, routes, a

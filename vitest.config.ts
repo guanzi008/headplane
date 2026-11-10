@@ -40,7 +40,18 @@ export default defineConfig({
             "build/**",
             "tests/integration/agent/**",
             "tests/integration/ssh/**",
+            "tests/integration/headplane/network.test.ts",
           ],
+          testTimeout: 120_000,
+          hookTimeout: 120_000,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "integration:pools",
+          include: ["tests/integration/headplane/network.test.ts"],
+          globalSetup: ["tests/integration/headplane/network.setup.ts"],
           testTimeout: 120_000,
           hookTimeout: 120_000,
         },

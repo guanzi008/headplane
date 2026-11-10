@@ -113,6 +113,7 @@ export async function freePort() {
 
 export async function startHeadscale(options: {
   version: HeadscaleVersion;
+  image?: string;
   // Labels the container `${HARNESS_LABEL}=${id}`.
   id: string;
   network?: tc.StartedNetwork;
@@ -183,7 +184,7 @@ export async function startHeadscale(options: {
   // A fixed host port survives restarts, which Headplane's Docker
   // integration does after editing the config.
   async function start(port: number) {
-    let builder = new tc.GenericContainer(headscaleImage(options.version))
+    let builder = new tc.GenericContainer(options.image ?? headscaleImage(options.version))
       .withCommand(["serve"])
       .withExposedPorts({ container: containerPort, host: port })
       .withBindMounts([{ source: configDir, target: "/etc/headscale" }])

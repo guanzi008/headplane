@@ -69,6 +69,15 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v6
 
+      - name: Check out the Headscale fork for address pool tests
+        if: matrix.files == '-L'
+        uses: actions/checkout@v6
+        with:
+          repository: guanzi008/headscale
+          ref: 4e16f935deb6d0faa0f49f56757d2b8a8e7ec621
+          path: headscale-source
+          persist-credentials: false
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -83,7 +92,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: go.mod
+          go-version-file: ${{ matrix.files == '-L' && 'headscale-source/go.mod' || 'go.mod' }}
           cache: true
 
       - name: Install dependencies
@@ -93,6 +102,7 @@ jobs:
         run: pnpm run test:integration $(grep -r ${{ matrix.files }} testedVersions tests/integration --include='*.test.ts')
         env:
           HP_HEADSCALE_VERSIONS: ${{ matrix.versions }}
+          HP_HEADSCALE_SOURCE: ${{ github.workspace }}/headscale-source
 
   nix:
     name: Nix Flake Check
