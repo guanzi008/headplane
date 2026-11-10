@@ -48,6 +48,16 @@ describe("parseServerVersion", () => {
     expect(v.raw).toBe("v0.0.0-20260703052708-048308511c72");
   });
 
+  test.for([
+    "v0.29.1-0.20261110075155-4e16f935deb6",
+    "v0.30.0-beta.1.0.20261110075155-4e16f935deb6",
+  ])("treats the Go development build %s as modern", (raw) => {
+    const version = parseServerVersion(raw);
+    expect(version.unknown).toBe(true);
+    expect(gte(version, "0.30.0")).toBe(true);
+    expect(formatServerVersion(version)).toBe(raw);
+  });
+
   test("does not flag a genuine 0.0.0 prerelease as unknown", () => {
     const v = parseServerVersion("v0.0.0-beta.1");
     expect(v.unknown).toBe(false);

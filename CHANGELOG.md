@@ -41,6 +41,8 @@
 
 ## Fixes
 
+- Development builds reporting Go pseudo-versions based on an older tag now use the modern Headscale API. Enabling or disabling node expiry on the 0.30 fork no longer falls back to the old query-string request format.
+
 - Address-pool integration tests now build the Headscale fork from source in a dedicated test project. CI supplies the fork checkout, while upstream compatibility tests retain their published version matrix. Tests also verify that clearing pools preserves existing IPv4 traffic and MagicDNS reverse lookups.
 
 - Saving from the Rules or Tags & Groups tabs no longer drops the comma from text like `,}` or `,]` inside a policy value.

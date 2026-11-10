@@ -116,6 +116,15 @@ describe("custom address pools on a real tailnet", () => {
     expect(ipv4((await newNode.machine()).ipAddresses)).toMatch(/^100\./);
   });
 
+  test("a fork built after an older tag still uses the modern node expiry API", async () => {
+    const node = await tailnet.node({ name: "network-expiry-node", user: "network-alice" });
+    await tailnet.api.nodes.toggleExpiry(node.id, true);
+    expect((await tailnet.api.nodes.get(node.id)).expiry).toBeNull();
+    await tailnet.api.nodes.toggleExpiry(node.id, false);
+    const enabled = await tailnet.api.nodes.get(node.id);
+    expect(new Date(enabled.expiry!).getTime()).toBeGreaterThan(Date.now() + 170 * 86_400_000);
+  });
+
   describe("address pool permissions", () => {
     let app: TestApp;
     let ownerCookie: string;
