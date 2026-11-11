@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, inject, test } from "vitest";
 
+import { machineAction } from "~/routes/machines/machine-actions";
 import { networkAction } from "~/routes/network/network-actions";
 
 import { createTailnet, type Tailnet } from "../../harness/tailnet";
@@ -96,6 +97,64 @@ describe("custom address pools on a real tailnet", () => {
       const reverse = await alice.exec(["nslookup", bobIP]);
       expect(reverse).toContain("network-bob-node.tailnet.test");
     });
+  });
+
+  test("a user's pool permits a CGNAT host route and pool edits update connected clients", async () => {
+    const route = "100.84.4.113/32";
+    const router = await tailnet.node({
+      name: "network-host-router",
+      user: "network-alice",
+      kernelTun: true,
+      routes: [route],
+    });
+    await router.exec(["ip", "addr", "add", route, "dev", "lo"]);
+    await alice.tailscale(["set", "--accept-routes=true"]);
+    const app = await tailnet.headplane();
+    const owner = (await app.signIn("owner")).cookie;
+    const result = await app.call(machineAction, "/machines", {
+      as: owner,
+      form: { intent: "update_routes", node_id: router.id, routes: route, enabled: "true" },
+    });
+    expect(statusOf(result)).toBe(200);
+
+    async function expectRoute(serving: boolean) {
+      await waitFor(`host route to be ${serving ? "served" : "withdrawn"}`, async () => {
+        const peers = Object.values(
+          (await alice.status()).Peer as Record<
+            string,
+            { HostName: string; AllowedIPs?: string[]; PrimaryRoutes?: string[] }
+          >,
+        );
+        const peer = peers.find((candidate) => candidate.HostName === router.name);
+        expect(peer?.AllowedIPs?.includes(route) ?? false).toBe(serving);
+        expect(peer?.PrimaryRoutes?.includes(route) ?? false).toBe(serving);
+      });
+      expect((await router.machine()).approvedRoutes).toContain(route);
+    }
+
+    await expectRoute(true);
+    await waitFor("traffic through the CGNAT host route", async () => {
+      expect(await alice.exec(["ping", "-c", "1", "-W", "2", "100.84.4.113"])).toMatch(
+        /\b0% packet loss/,
+      );
+    });
+    const [user] = await tailnet.api.users.list({ name: "network-alice" });
+    const savePool = (pools: string) =>
+      app.call(networkAction, "/network", {
+        as: owner,
+        form: { intent: "save", user_id: user.id, pools },
+      });
+    try {
+      expect(statusOf(await savePool(""))).toBe(200);
+      await expectRoute(false);
+      expect((await router.machine()).ipAddresses).toContain("10.42.5.2");
+    } finally {
+      expect(statusOf(await savePool("10.42.5.0/24"))).toBe(200);
+    }
+    await expectRoute(true);
+    expect(await alice.exec(["ping", "-c", "1", "-W", "2", "100.84.4.113"])).toMatch(
+      /\b0% packet loss/,
+    );
   });
 
   test("clearing pools preserves existing IPv4 traffic and reverse DNS", async () => {
